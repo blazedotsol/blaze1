@@ -1,43 +1,51 @@
-const OpenAI = require("openai");
+// api/generate-image.js
+import OpenAI from "openai";
 
-module.exports = async (req, res) => {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+export default async function handler(req, res) {
+  // (CORS er egentlig unødvendig på same-origin i Vercel, men skader ikke)
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") {
-    return res.status(200).end();
+    res.status(200).end();
+    return;
   }
 
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Only POST allowed" });
+    res.status(405).json({ error: "Only POST allowed" });
+    return;
   }
 
   try {
     const { prompt, size = "1024x1024" } = req.body || {};
-    
     if (!prompt) {
-      return res.status(400).json({ error: "Missing prompt" });
+      res.status(400).json({ error: "Missing prompt" });
+      return;
     }
-    
     if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({ error: "Missing OPENAI_API_KEY environment variable" });
+      res.status(500).json({ error: "Missing OPENAI_API_KEY environment variable" });
+      return;
     }
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
     const out = await openai.images.generate({
-      model: "dall-e-3",
+      model: "gpt-image-1",          // <-- riktig modell for bilde-generering
       prompt,
-      size,
+      size,                          // "512x512" | "1024x1024" | "2048x2048" (dersom aktivert)
       response_format: "b64_json",
+      n: 1
     });
 
-    return res.status(200).json({ imageBase64: out.data[0].b64_json });
+    res.status(200).json({ imageBase64: out.data[0].b64_json });
   } catch (e) {
-    console.error("OpenAI error:", e);
+    console.error("generate-image error:", e);
     const status = e?.status || e?.response?.status || 500;
-    const message = e?.message || e?.response?.data?.error?.message || "Image generation failed";
-    return res.status(status).json({ error: message });
+    const message =
+      e?.message ||
+      e?.response?.data?.error?.message ||
+      "Image generation failed";
+    res.status(status).json({ error: message });
   }
-};
+}

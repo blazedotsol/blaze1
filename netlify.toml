@@ -1,0 +1,17 @@
+[build]
+  functions = "netlify/functions"
+  publish = "dist"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[redirects]]
+  from = "/api/generate-image"
+  to = "/.netlify/functions/generate-image"
+  status = 200
+
+[[redirects]]
+  from = "/api/hello"
+  to = "/.netlify/functions/hello"
+  status = 200

@@ -3,25 +3,18 @@ import { Sparkles, Download, RefreshCw, Image as ImageIcon } from "lucide-react"
 import { fileToDataUrl } from "./utils";
 
 // Generate image with job application using proper image composition
-async function generateJobApplicationImage(userImage: File, mode: string): Promise<string> {
+async function generateJobApplicationImage(userImage: File): Promise<string> {
   try {
-    const userImageBase64 = await fileToDataUrl(userImage);
-    const templateUrl = "/image copy copy.png";
+    const form = new FormData();
+    form.append("userImage", userImage);
+    
+    // Fetch template image and add to form
+    const templateBlob = await (await fetch("/image copy copy.png")).blob();
+    form.append("templateImage", templateBlob);
 
     const res = await fetch("/api/generate-image", {
       method: "POST",
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userImageBase64,
-        templateUrl,
-        mode: mode,
-        scalePctOfWidth: 0.15,
-        posX: 0.60,
-        posY: 0.40,
-        opacity: 0.75,
-      }),
+      body: form,
     });
 
     const ct = res.headers.get("content-type") || "";
@@ -122,7 +115,7 @@ function App() {
     setGeneratedMeme1(null);
 
     try {
-      const dataUrl = await generateJobApplicationImage(uploadedImage1, "edit");
+      const dataUrl = await generateJobApplicationImage(uploadedImage1);
       setGeneratedMeme1(dataUrl);
     } catch (err: any) {
       console.error("Error generating image:", err);
@@ -143,7 +136,7 @@ function App() {
     setGeneratedMeme2(null);
 
     try {
-      const dataUrl = await generateJobApplicationImage(uploadedImage2, "overlay");
+      const dataUrl = await generateJobApplicationImage(uploadedImage2);
       setGeneratedMeme2(dataUrl);
     } catch (err: any) {
       console.error("Error generating image:", err);

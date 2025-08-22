@@ -61,6 +61,8 @@ exports.handler = async (event, context) => {
       return {
         statusCode: 500,
         headers,
+      }
+    }
     // Use image editing with the user's image as base
     const out = await openai.images.edit({
       model: "dall-e-2",

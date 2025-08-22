@@ -313,7 +313,7 @@ function App() {
                 
                 <button
                   onClick={handleDownloadTemplate}
-                  className="w-full border border-black text-black px-6 py-3 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2"
+                  className="w-full border border-black text-black px-6 py-3 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 relative z-10"
                 >
                   <Download className="w-5 h-5" />
                   download template

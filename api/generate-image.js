@@ -31,6 +31,7 @@ export default async function handler(req, res) {
       // LOGG for å se hva som faktisk kom inn:
       console.log("Files received:", Object.keys(files));
       console.log("Fields received:", Object.keys(fields));
+      console.log("Mode field:", fields.mode);
 
       // NB: formidable gir arrays
       const userFile = files.userImage?.[0];

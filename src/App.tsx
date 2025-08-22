@@ -317,11 +317,23 @@ function App() {
       <section className="min-h-screen bg-black py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-white font-mono text-2xl md:text-4xl lg:text-5xl uppercase tracking-widest text-center mb-16 border-b border-white pb-4">
-            meme gallery
+            community tweets
           </h2>
-          <div className="text-center mb-16">
-            <p className="text-gray-400 text-lg mb-8 font-mono">your generated memes will appear here</p>
+          
+          <div className="flex justify-center mb-8">
+            <div className="bg-white p-4 rounded-lg max-w-2xl w-full">
+              <a 
+                className="twitter-timeline" 
+                data-theme="light"
+                data-height="600"
+                data-chrome="noheader nofooter noborders transparent"
+                href="https://twitter.com/i/communities/1925625907995185617"
+              >
+                Tweets from Job Application Community
+              </a>
+            </div>
           </div>
+          
           <div className="text-center mt-16">
             <a
               href="https://x.com/i/communities/1925625907995185617"
@@ -329,7 +341,7 @@ function App() {
               rel="noopener noreferrer"
               className="border border-white text-white px-12 py-4 hover:bg-white hover:text-black font-mono text-lg uppercase tracking-wider transition-colors duration-200 inline-block"
             >
-              find more memes in our community
+              join our community
             </a>
           </div>
         </div>

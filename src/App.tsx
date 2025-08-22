@@ -107,7 +107,10 @@ function App() {
   return (
     <div className="bg-black">
       <header className="relative h-screen w-full overflow-hidden">
-        <div className="absolute inset-0 bg-black" />
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
+          style={{ backgroundImage: 'url(/image copy.png)' }}
+        />
         <div
           className="absolute inset-0 flex items-center justify-center"
           style={{ transform: `scale(${zoomScale})`, transition: "transform 0.1s ease-out" }}

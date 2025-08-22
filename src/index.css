@@ -488,6 +488,19 @@
 }
 
 /* Throwing animation for application */
+/* Jumpscare fade out animations */
+@keyframes jumpscare-bg-fade {
+  0% { opacity: 1; }
+  40% { opacity: 1; } /* Stay visible until 2 seconds (40% of 5s) */
+  100% { opacity: 0; } /* Fade out from 2 seconds to end */
+}
+
+@keyframes jumpscare-man-fade {
+  0% { opacity: 1; }
+  80% { opacity: 1; } /* Stay visible until 4 seconds (80% of 5s) */
+  100% { opacity: 0; } /* Fade out from 4 seconds to end */
+}
+
 .throwing-application {
   animation: throw-application 1s ease-out forwards;
 }

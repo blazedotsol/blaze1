@@ -316,28 +316,12 @@ function App() {
 
       <header className="relative h-screen w-full overflow-hidden">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat h-screen md:h-screen glitch-bg" 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat h-screen md:h-screen" 
           style={{ 
             backgroundImage: 'url("/image copy.png")',
             height: typeof window !== "undefined" && window.innerWidth < 768 ? '90vh' : '100vh'
           }}
         />
-        
-        {/* VHS/Glitch Effect Layers */}
-        <div className="absolute inset-0 glitch-layer-1"></div>
-        <div className="absolute inset-0 glitch-layer-2"></div>
-        <div className="absolute inset-0 glitch-layer-3"></div>
-        <div className="absolute inset-0 distortion-overlay"></div>
-        <div className="absolute inset-0 scanlines"></div>
-        <div className="absolute inset-0 noise-texture"></div>
-        <div className="absolute inset-0 vignette"></div>
-        
-        {/* VHS Effects */}
-        <div className="absolute inset-0 vhs-static"></div>
-        <div className="absolute inset-0 vhs-tracking"></div>
-        <div className="absolute inset-0 chromatic-aberration"></div>
-        <div className="absolute inset-0 vhs-flicker"></div>
-        <div className="absolute inset-0 tape-damage"></div>
         
         {/* Navigation buttons at top */}
         <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-20">

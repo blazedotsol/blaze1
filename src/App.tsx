@@ -269,15 +269,15 @@ function App() {
             </div>
 
             {/* Block 2: Download Template */}
-            <div className="border border-black p-6 bg-white relative overflow-hidden">
+            <div className="border border-black p-6 bg-white relative overflow-visible">
               
               {/* Throwing application animation */}
               {isThrowingAnimation && (
-                <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute inset-0 pointer-events-none overflow-visible">
                   <img 
                     src="/application-side.png" 
                     alt="Throwing Application" 
-                    className="absolute w-32 h-40 throwing-application"
+                    className="absolute w-32 h-40 throwing-application z-50"
                     style={{
                       left: '50%',
                       top: '70%',

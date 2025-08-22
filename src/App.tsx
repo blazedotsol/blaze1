@@ -44,6 +44,7 @@ function App() {
   const [uploadedImage1, setUploadedImage1] = useState<File | null>(null);
   const [generatedMeme1, setGeneratedMeme1] = useState<string | null>(null);
   const [error1, setError1] = useState<string | null>(null);
+  const [isThrowingAnimation, setIsThrowingAnimation] = useState(false);
 
   const handleImageUpload1 = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -72,6 +73,22 @@ function App() {
     } finally {
       setIsGenerating1(false);
     }
+  };
+
+  const handleDownloadTemplate = () => {
+    // Start throwing animation
+    setIsThrowingAnimation(true);
+    
+    // Reset animation after it completes
+    setTimeout(() => {
+      setIsThrowingAnimation(false);
+    }, 1000);
+    
+    // Download the template
+    const link = document.createElement('a');
+    link.href = '/image copy copy.png';
+    link.download = 'job-application-template.png';
+    link.click();
   };
 
   useEffect(() => {
@@ -252,7 +269,32 @@ function App() {
             </div>
 
             {/* Block 2: Download Template */}
-            <div className="border border-white p-6 bg-white">
+            <div className="border border-black p-6 bg-white relative overflow-hidden">
+              {/* Eminem background */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                <img 
+                  src="/eminem.png" 
+                  alt="Eminem" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              
+              {/* Throwing application animation */}
+              {isThrowingAnimation && (
+                <div className="absolute inset-0 pointer-events-none">
+                  <img 
+                    src="/application-side.png" 
+                    alt="Throwing Application" 
+                    className="absolute w-16 h-20 throwing-application"
+                    style={{
+                      left: '50%',
+                      top: '70%',
+                      transform: 'translate(-50%, -50%)'
+                    }}
+                  />
+                </div>
+              )}
+              
               <div className="flex items-center gap-3 mb-4">
                 <span className="text-black font-mono text-lg">{">"}</span>
                 <h3 className="text-black font-mono text-lg uppercase tracking-wider">download template</h3>
@@ -269,14 +311,13 @@ function App() {
                   />
                 </div>
                 
-                <a
-                  href="/image copy copy.png"
-                  download="job-application-template.png"
+                <button
+                  onClick={handleDownloadTemplate}
                   className="w-full border border-black text-black px-6 py-3 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   <Download className="w-5 h-5" />
                   download template
-                </a>
+                </button>
               </div>
             </div>
           </div>

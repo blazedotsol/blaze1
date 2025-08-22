@@ -13,18 +13,34 @@ app.get("/api/health", (_req, res) => res.json({ ok: true, hasKey: !!process.env
 
 app.post("/api/generate-image", async (req, res) => {
   try {
-    const { prompt, size = "1024x1024" } = req.body || {};
+    const { prompt, size = "1024x1024", userImage, templateImage, type } = req.body || {};
     if (!prompt) return res.status(400).json({ error: "Missing prompt" });
     if (!process.env.OPENAI_API_KEY) {
       return res.status(500).json({ error: "OPENAI_API_KEY is not set on the server" });
     }
 
-    const out = await openai.images.generate({
-      model: "gpt-image-1",
-      prompt,
-      size,
-      response_format: "b64_json",
-    });
+    let out;
+    
+    if (type === "edit" && userImage) {
+      // Use image editing with the user's uploaded image
+      const imageBuffer = Buffer.from(userImage, 'base64');
+      
+      out = await openai.images.edit({
+        model: "dall-e-2", // dall-e-2 supports image editing
+        image: imageBuffer,
+        prompt: prompt + (templateImage ? " Use the job application template provided as reference." : ""),
+        size,
+        response_format: "b64_json",
+      });
+    } else {
+      // Fallback to regular generation
+      out = await openai.images.generate({
+        model: "dall-e-3",
+        prompt,
+        size,
+        response_format: "b64_json",
+      });
+    }
 
     return res.json({ imageBase64: out.data[0].b64_json });
   } catch (e) {

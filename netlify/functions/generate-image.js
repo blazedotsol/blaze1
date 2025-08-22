@@ -25,7 +25,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { prompt, size = "1024x1024" } = JSON.parse(event.body || '{}');
+    const { prompt, size = "1024x1024", userImage, templateImage, type } = JSON.parse(event.body || '{}');
     
     if (!prompt) {
       return {
@@ -44,12 +44,29 @@ exports.handler = async (event, context) => {
     }
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const out = await openai.images.generate({
-      model: "dall-e-3",
-      prompt,
-      size,
-      response_format: "b64_json",
-    });
+    
+    let out;
+    
+    if (type === "edit" && userImage) {
+      // Use image editing with the user's uploaded image
+      const imageBuffer = Buffer.from(userImage, 'base64');
+      
+      out = await openai.images.edit({
+        model: "dall-e-2", // dall-e-2 supports image editing
+        image: imageBuffer,
+        prompt: prompt + (templateImage ? " Use the job application template provided as reference." : ""),
+        size,
+        response_format: "b64_json",
+      });
+    } else {
+      // Fallback to regular generation
+      out = await openai.images.generate({
+        model: "dall-e-3",
+        prompt,
+        size,
+        response_format: "b64_json",
+      });
+    }
 
     return {
       statusCode: 200,

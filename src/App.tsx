@@ -1,25 +1,76 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Sparkles, Download, RefreshCw, Image as ImageIcon } from "lucide-react";
 
-// === NYTT: kall Vercel-API'et direkte (same-origin) ===
-async function generateImage(prompt: string, size = "1024x1024"): Promise<string> {
-  const res = await fetch("/api/generate-image", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt, size }),
+// Convert file to base64
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const result = reader.result as string;
+      // Remove data:image/...;base64, prefix
+      const base64 = result.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = error => reject(error);
   });
+};
 
-  const ct = res.headers.get("content-type") || "";
-  const data = ct.includes("application/json") ? await res.json() : { raw: await res.text() };
-
-  if (!res.ok) {
-    const msg = (data as any)?.error || (data as any)?.raw || `HTTP ${res.status}`;
-    throw new Error(msg);
+// Load job application template as base64
+const loadJobApplicationTemplate = async (): Promise<string> => {
+  try {
+    const response = await fetch('/image copy copy.png');
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = error => reject(error);
+    });
+  } catch (error) {
+    throw new Error('Failed to load job application template');
   }
+};
 
-  const b64 = (data as any)?.imageBase64 || (data as any)?.image;
-  if (!b64) throw new Error("Tomt svar fra API");
-  return b64;
+// Generate image with job application
+async function generateJobApplicationImage(userImage: File, prompt: string): Promise<string> {
+  try {
+    const userImageBase64 = await fileToBase64(userImage);
+    const templateBase64 = await loadJobApplicationTemplate();
+    
+    const res = await fetch("/api/generate-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        prompt,
+        userImage: userImageBase64,
+        templateImage: templateBase64,
+        size: "1024x1024",
+        type: "edit"
+      }),
+    });
+
+    const ct = res.headers.get("content-type") || "";
+    const data = ct.includes("application/json") ? await res.json() : { raw: await res.text() };
+
+    if (!res.ok) {
+      const msg = (data as any)?.error || (data as any)?.raw || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+
+    const b64 = (data as any)?.imageBase64 || (data as any)?.image;
+    if (!b64) throw new Error("Empty response from API");
+    return b64;
+  } catch (error: any) {
+    if (error.message?.includes('fetch')) {
+      throw new Error("Backend server is not available. This feature only works in development mode.");
+    }
+    throw error;
+  }
 }
 
 function App() {
@@ -101,8 +152,8 @@ function App() {
     setGeneratedMeme1(null);
 
     try {
-      const prompt = "Make this figure/character on the uploaded photo hold this job application. Don't do any other changes on the image. Keep it as the same aspect ratio as the uploaded image. The job application should look like a paper document being held by the character.";
-      const b64 = await generateImage(prompt);
+      const prompt = "Make this figure/character on the uploaded photo hold the provided job application. Don't do any other changes on the image. Keep it as the same aspect ratio as the uploaded image. The job application should look like a paper document being held by the character.";
+      const b64 = await generateJobApplicationImage(uploadedImage1, prompt);
       setGeneratedMeme1(`data:image/png;base64,${b64}`);
     } catch (err: any) {
       console.error("Error generating image:", err);
@@ -123,8 +174,8 @@ function App() {
     setGeneratedMeme2(null);
 
     try {
-      const prompt = "Make an overlay when you blend the uploaded photo with a job application template. Keep it in the same aspect ratio as the uploaded image. Do not do any other changes than blending the photos. Create a subtle overlay effect.";
-      const b64 = await generateImage(prompt);
+      const prompt = "Make an overlay when you blend the uploaded photo with the provided job application template. Keep it in the same aspect ratio as the uploaded image. Do not do any other changes than blending the photos. Create a subtle overlay effect.";
+      const b64 = await generateJobApplicationImage(uploadedImage2, prompt);
       setGeneratedMeme2(`data:image/png;base64,${b64}`);
     } catch (err: any) {
       console.error("Error generating image:", err);

@@ -16,7 +16,7 @@ async function generateJobApplicationImage(userImage: File, prompt: string, type
     const templateBlob = await templateResponse.blob();
     formData.append('templateImage', templateBlob, 'template.png');
 
-    const res = await fetch("/.netlify/functions/generate-image", {
+    const res = await fetch("/api/generate-image", {
       method: "POST",
       body: formData, // Send as multipart form data
     });

@@ -1,53 +1,23 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Sparkles, Download, RefreshCw, Image as ImageIcon } from "lucide-react";
 
-// Convert file to base64
-const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      const result = reader.result as string;
-      // Remove data:image/...;base64, prefix
-      const base64 = result.split(',')[1];
-      resolve(base64);
-    };
-    reader.onerror = error => reject(error);
-  });
-};
-
-// Load job application template as base64
-const loadJobApplicationTemplate = async (): Promise<string> => {
+// Generate image with job application using multipart form data
+async function generateJobApplicationImage(userImage: File, prompt: string, type: string): Promise<string> {
   try {
-    const response = await fetch('/image copy copy.png');
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
-      reader.onload = () => {
-        const result = reader.result as string;
-        const base64 = result.split(',')[1];
-        resolve(base64);
-      };
-      reader.onerror = error => reject(error);
-    });
-  } catch (error) {
-    throw new Error('Failed to load job application template');
-  }
-};
+    // Create FormData for multipart upload
+    const formData = new FormData();
+    formData.append('userImage', userImage);
+    formData.append('prompt', prompt);
+    formData.append('type', type);
+    formData.append('size', '1024x1024');
+    
+    // Load and append template image
+    const templateResponse = await fetch('/image copy copy.png');
+    const templateBlob = await templateResponse.blob();
+    formData.append('templateImage', templateBlob, 'template.png');
 
-// Generate image with job application
-async function generateJobApplicationImage(userImage: File, prompt: string): Promise<string> {
-  try {
     const res = await fetch("/api/generate-image", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        prompt,
-        userImage: await fileToBase64(userImage),
-        size: "1024x1024",
-        type: "generation" // Use generation instead of edit for now
-      }),
+      body: formData, // Send as multipart form data
     });
 
     const ct = res.headers.get("content-type") || "";
@@ -148,8 +118,8 @@ function App() {
     setGeneratedMeme1(null);
 
     try {
-      const prompt = "Make this figure/character hold a job application document. The job application should be a white paper document with text and form fields, held naturally by the character. Don't change any other part of the image. Keep the same aspect ratio and style.";
-      const b64 = await generateJobApplicationImage(uploadedImage1, prompt);
+      const prompt = "Insert the provided job application image so the character is holding it. Match scale/perspective. Do not change any other part of the image.";
+      const b64 = await generateJobApplicationImage(uploadedImage1, prompt, "edit");
       setGeneratedMeme1(`data:image/png;base64,${b64}`);
     } catch (err: any) {
       console.error("Error generating image:", err);
@@ -170,8 +140,8 @@ function App() {
     setGeneratedMeme2(null);
 
     try {
-      const prompt = "Create a subtle overlay effect blending this image with a job application document. The job application should appear as a semi-transparent overlay with form fields and text visible. Keep the same aspect ratio and don't change the base image significantly.";
-      const b64 = await generateJobApplicationImage(uploadedImage2, prompt);
+      const prompt = "Blend the provided job application template as a subtle overlay on this image. Make it semi-transparent with visible form fields and text.";
+      const b64 = await generateJobApplicationImage(uploadedImage2, prompt, "overlay");
       setGeneratedMeme2(`data:image/png;base64,${b64}`);
     } catch (err: any) {
       console.error("Error generating image:", err);

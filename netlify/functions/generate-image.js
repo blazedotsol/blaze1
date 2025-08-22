@@ -1,4 +1,5 @@
 const OpenAI = require("openai");
+const multiparty = require("multiparty");
 
 exports.handler = async (event, context) => {
   // Enable CORS
@@ -25,7 +26,20 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { prompt, size = "1024x1024", userImage, type } = JSON.parse(event.body || '{}');
+    // Parse multipart form data
+    const form = new multiparty.Form();
+    const { fields, files } = await new Promise((resolve, reject) => {
+      form.parse(event, (err, fields, files) => {
+        if (err) reject(err);
+        else resolve({ fields, files });
+      });
+    });
+    
+    const prompt = fields.prompt?.[0];
+    const size = fields.size?.[0] || "1024x1024";
+    const type = fields.type?.[0];
+    const userImageFile = files.userImage?.[0];
+    const templateImageFile = files.templateImage?.[0];
     
     if (!prompt) {
       return {
@@ -35,40 +49,26 @@ exports.handler = async (event, context) => {
       };
     }
     
+    if (!userImageFile) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: "Missing user image" })
+      };
+    }
+    
     if (!process.env.OPENAI_API_KEY) {
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({ error: "Missing OPENAI_API_KEY" })
-      };
-    }
-
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    
-    let out;
-    
-    if (type === "variation" && userImage) {
-      // Create variations of the uploaded image
-      out = await openai.images.createVariation({
-        model: "dall-e-2",
-        image: Buffer.from(userImage, 'base64'),
-        n: 1,
-        size,
-        response_format: "b64_json",
-      });
-    } else {
-      // Use regular generation with detailed prompt
-      const enhancedPrompt = userImage 
-        ? `${prompt} Style: realistic photo, high quality, detailed`
-        : prompt;
-        
-      out = await openai.images.generate({
-        model: "dall-e-3",
-        prompt: enhancedPrompt,
-        size,
-        response_format: "b64_json",
-      });
-    }
+    // Use image editing with the user's image as base
+    const out = await openai.images.edit({
+      model: "dall-e-2",
+      image: userImageBuffer,
+      prompt,
+      size,
+      response_format: "b64_json",
+    });
 
     return {
       statusCode: 200,

@@ -547,9 +547,9 @@ function App() {
         </div>
       </section>
 
-      {/* Jumpscare Trigger */}
-      <div ref={jumpscareRef} className="h-1 w-full bg-transparent"></div>
       <section className="min-h-screen bg-black py-16 px-4">
+        {/* Jumpscare Trigger */}
+        <div ref={jumpscareRef} className="h-1 w-full bg-transparent"></div>
         <div className="max-w-7xl mx-auto">
           <h2 className="text-white font-mono text-2xl md:text-4xl lg:text-5xl uppercase tracking-widest text-center mb-16 border-b border-white pb-4">
             lore

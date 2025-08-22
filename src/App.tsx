@@ -175,7 +175,7 @@ function App() {
           className="absolute inset-0 flex items-center justify-center"
           style={{ transform: `scale(${zoomScale})`, transition: "transform 0.1s ease-out" }}
         >
-          <img src="/application.png" alt="Application" className="max-w-full max-h-full object-contain opacity-80" />
+          <img src="/application.png" alt="Application" className="w-4/5 h-4/5 object-contain opacity-80" />
         </div>
 
         <div className="absolute inset-0 distortion-overlay" />
@@ -192,7 +192,7 @@ function App() {
                 href="https://www.tiktok.com/search?q=job%20application&t=1755801808136"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-black/80 backdrop-blur-sm border border-red-600/50 text-white px-4 py-2 rounded-lg hover:bg-red-900/50 hover:border-red-500 transition-all duration-300 text-sm font-semibold"
+                className="bg-black/80 backdrop-blur-sm border border-red-600/50 text-white px-6 py-3 rounded-lg hover:bg-red-900/50 hover:border-red-500 transition-all duration-300 text-base font-semibold"
               >
                 TikTok
               </a>
@@ -200,7 +200,7 @@ function App() {
                 href="https://x.com/jobapplicmeme"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-black/80 backdrop-blur-sm border border-red-600/50 text-white px-4 py-2 rounded-lg hover:bg-red-900/50 hover:border-red-500 transition-all duration-300 text-sm font-semibold"
+                className="bg-black/80 backdrop-blur-sm border border-red-600/50 text-white px-6 py-3 rounded-lg hover:bg-red-900/50 hover:border-red-500 transition-all duration-300 text-base font-semibold"
               >
                 X
               </a>
@@ -208,7 +208,7 @@ function App() {
                 href="https://x.com/i/communities/1925625907995185617"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-black/80 backdrop-blur-sm border border-red-600/50 text-white px-4 py-2 rounded-lg hover:bg-red-900/50 hover:border-red-500 transition-all duration-300 text-sm font-semibold"
+                className="bg-black/80 backdrop-blur-sm border border-red-600/50 text-white px-6 py-3 rounded-lg hover:bg-red-900/50 hover:border-red-500 transition-all duration-300 text-base font-semibold"
               >
                 $JOB Community
               </a>
@@ -216,7 +216,7 @@ function App() {
                 href="https://dexscreener.com/solana/emlddri7ppyvmvuni2zfbsshdzz9hd4yeyyn9hr85g4l"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-black/80 backdrop-blur-sm border border-red-600/50 text-white px-4 py-2 rounded-lg hover:bg-red-900/50 hover:border-red-500 transition-all duration-300 text-sm font-semibold"
+                className="bg-black/80 backdrop-blur-sm border border-red-600/50 text-white px-6 py-3 rounded-lg hover:bg-red-900/50 hover:border-red-500 transition-all duration-300 text-base font-semibold"
               >
                 DEX
               </a>
@@ -224,13 +224,13 @@ function App() {
 
             <div
               onClick={handleCopyCA}
-              className="text-white/70 text-xs font-mono tracking-wider cursor-pointer hover:text-white/90 transition-colors duration-200"
+              className="text-white/70 text-sm font-mono tracking-wider cursor-pointer hover:text-white/90 transition-colors duration-200"
             >
               CA: scSdK1NCmLCLQrqGWTBXE7m7cPKe42nSsd2RzUGpump
             </div>
             <div
               onClick={handleCopyCA}
-              className="text-white/50 text-xs cursor-pointer hover:text-white/80 transition-colors duration-200 mt-1"
+              className="text-white/50 text-sm cursor-pointer hover:text-white/80 transition-colors duration-200 mt-1"
             >
               {copied ? "✓ Copied!" : "(click to copy)"}
             </div>

@@ -251,33 +251,33 @@
     repeating-linear-gradient(
       0deg,
       transparent 0px,
-      rgba(255, 255, 255, 0.03) 1px,
+      rgba(255, 255, 255, 0.015) 1px,
       transparent 2px
     ),
     repeating-linear-gradient(
       90deg,
       transparent 0px,
-      rgba(0, 0, 0, 0.05) 1px,
+      rgba(0, 0, 0, 0.025) 1px,
       transparent 2px
     );
-  animation: vhs-static-flicker 0.1s infinite;
+  animation: vhs-static-flicker 0.4s infinite;
 }
 
 @keyframes vhs-static-flicker {
-  0%, 100% { opacity: 0.8; }
-  50% { opacity: 0.6; }
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.3; }
 }
 
 .vhs-tracking {
   background: repeating-linear-gradient(
     0deg,
     transparent 0px,
-    rgba(255, 255, 255, 0.02) 2px,
+    rgba(255, 255, 255, 0.01) 2px,
     transparent 4px,
-    rgba(0, 0, 0, 0.04) 6px,
+    rgba(0, 0, 0, 0.02) 6px,
     transparent 8px
   );
-  animation: vhs-tracking-drift 3s infinite ease-in-out;
+  animation: vhs-tracking-drift 5s infinite ease-in-out;
 }
 
 @keyframes vhs-tracking-drift {
@@ -318,17 +318,17 @@
 }
 
 .vhs-flicker {
-  background: rgba(0, 0, 0, 0.1);
-  animation: vhs-brightness-flicker 0.2s infinite;
+  background: rgba(0, 0, 0, 0.05);
+  animation: vhs-brightness-flicker 0.8s infinite;
 }
 
 @keyframes vhs-brightness-flicker {
   0%, 90%, 100% { opacity: 0; }
-  5% { opacity: 0.3; }
+  5% { opacity: 0.15; }
   10% { opacity: 0; }
-  15% { opacity: 0.2; }
+  15% { opacity: 0.1; }
   20% { opacity: 0; }
-  85% { opacity: 0.1; }
+  85% { opacity: 0.05; }
 }
 
 .tape-damage {
@@ -367,30 +367,30 @@
 /* Clean White VHS Noise */
 .vhs-noise {
   background-image: 
-    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.12) 0%, transparent 50%),
-    radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 10% 90%, rgba(255, 255, 255, 0.18) 0%, transparent 50%),
-    radial-gradient(circle at 90% 50%, rgba(255, 255, 255, 0.06) 0%, transparent 50%);
-  animation: vhs-noise-drift 3s infinite ease-in-out;
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 10% 90%, rgba(255, 255, 255, 0.09) 0%, transparent 50%),
+    radial-gradient(circle at 90% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
+  animation: vhs-noise-drift 6s infinite ease-in-out;
 }
 
 @keyframes vhs-noise-drift {
   0%, 100% { 
     background-position: 0% 0%, 100% 100%, 50% 0%, 0% 100%, 100% 50%;
-    opacity: 0.8;
+    opacity: 0.4;
   }
   25% { 
     background-position: 10% 5%, 90% 95%, 60% 10%, 5% 90%, 95% 45%;
-    opacity: 1;
+    opacity: 0.6;
   }
   50% { 
     background-position: 5% 10%, 95% 90%, 45% 5%, 10% 95%, 90% 55%;
-    opacity: 0.6;
+    opacity: 0.3;
   }
   75% { 
     background-position: 15% 2%, 85% 98%, 55% 8%, 2% 92%, 98% 48%;
-    opacity: 0.9;
+    opacity: 0.5;
   }
 }
 
@@ -399,27 +399,27 @@
     repeating-linear-gradient(
       0deg,
       transparent 0px,
-      rgba(255, 255, 255, 0.04) 1px,
+      rgba(255, 255, 255, 0.02) 1px,
       transparent 2px,
-      rgba(255, 255, 255, 0.06) 3px,
+      rgba(255, 255, 255, 0.03) 3px,
       transparent 4px
     ),
     repeating-linear-gradient(
       90deg,
       transparent 0px,
-      rgba(255, 255, 255, 0.03) 1px,
+      rgba(255, 255, 255, 0.015) 1px,
       transparent 2px,
-      rgba(255, 255, 255, 0.05) 3px,
+      rgba(255, 255, 255, 0.025) 3px,
       transparent 4px
     );
-  animation: vhs-grain-flicker 0.1s infinite;
+  animation: vhs-grain-flicker 0.3s infinite;
 }
 
 @keyframes vhs-grain-flicker {
-  0%, 100% { opacity: 0.6; }
-  25% { opacity: 0.8; }
-  50% { opacity: 0.4; }
-  75% { opacity: 0.7; }
+  0%, 100% { opacity: 0.3; }
+  25% { opacity: 0.4; }
+  50% { opacity: 0.2; }
+  75% { opacity: 0.35; }
 }
 
 /* Additional VHS Effects for Header */
@@ -427,12 +427,12 @@
   background: repeating-linear-gradient(
     0deg,
     transparent 0px,
-    rgba(255, 255, 255, 0.03) 1px,
+    rgba(255, 255, 255, 0.015) 1px,
     transparent 2px,
-    rgba(255, 255, 255, 0.05) 3px,
+    rgba(255, 255, 255, 0.025) 3px,
     transparent 4px
   );
-  animation: vhs-scanlines-move 0.1s infinite linear;
+  animation: vhs-scanlines-move 0.2s infinite linear;
 }
 
 @keyframes vhs-scanlines-move {
@@ -445,31 +445,31 @@
     linear-gradient(
       90deg,
       transparent 0%,
-      rgba(255, 255, 255, 0.08) 20%,
+      rgba(255, 255, 255, 0.04) 20%,
       transparent 40%,
-      rgba(255, 255, 255, 0.06) 60%,
+      rgba(255, 255, 255, 0.03) 60%,
       transparent 80%,
-      rgba(255, 255, 255, 0.1) 100%
+      rgba(255, 255, 255, 0.05) 100%
     );
-  animation: vhs-interference-drift 2s infinite ease-in-out;
+  animation: vhs-interference-drift 4s infinite ease-in-out;
 }
 
 @keyframes vhs-interference-drift {
   0%, 100% { 
     transform: translateX(0) scaleY(1);
-    opacity: 0.5;
+    opacity: 0.25;
   }
   25% { 
     transform: translateX(-10px) scaleY(1.01);
-    opacity: 0.8;
+    opacity: 0.4;
   }
   50% { 
     transform: translateX(5px) scaleY(0.99);
-    opacity: 0.3;
+    opacity: 0.15;
   }
   75% { 
     transform: translateX(-3px) scaleY(1.005);
-    opacity: 0.6;
+    opacity: 0.3;
   }
 }
 

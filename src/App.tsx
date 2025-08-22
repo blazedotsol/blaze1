@@ -157,48 +157,51 @@ function App() {
   }, [jumpscareTriggered]);
   useEffect(() => {
     const maxZoomScroll = typeof window !== "undefined" ? window.innerHeight * 1.5 : 1000;
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      setWheelDelta((prev) => Math.min(prev + Math.abs(e.deltaY), maxZoomScroll));
-    };
-
-    const handleTouchStart = (e: TouchEvent) => {
-      const touch = e.touches[0];
-      setTouchStart(touch.clientY);
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (touchStart === null) return;
+    if (isMobile) {
+      // On mobile, automatically animate the zoom effect
+      const animateZoom = () => {
+        setWheelDelta((prev) => {
+          if (prev >= maxZoomScroll) return prev;
+          return Math.min(prev + 15, maxZoomScroll);
+        });
+      };
       
-      const touch = e.touches[0];
-      const diff = touchStart - touch.clientY;
+      const interval = setInterval(animateZoom, 50);
       
-      if (diff > 5) { // Only trigger on significant upward swipe (5px threshold)
+      return () => clearInterval(interval);
+    } else {
+      // Desktop: keep scroll-based zoom
+      const handleWheel = (e: WheelEvent) => {
         e.preventDefault();
-        setWheelDelta((prev) => Math.min(prev + Math.abs(diff) * 2, maxZoomScroll));
-      } else if (diff < -5) {
-        // Allow normal downward scrolling
-        return;
+        setWheelDelta((prev) => Math.min(prev + Math.abs(e.deltaY), maxZoomScroll));
+      };
+
+      window.addEventListener("wheel", handleWheel, { passive: false });
+      
+      return () => {
+        window.removeEventListener("wheel", handleWheel);
+      };
+    }
+  }, [wheelDelta]);
+
+  // Separate effect for mobile detection and reset
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth < 768;
+      if (!isMobile) {
+        // Reset zoom when switching to desktop
+        setWheelDelta(0);
       }
     };
 
-    const handleTouchEnd = () => {
-      setTouchStart(null);
-    };
-
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    window.addEventListener("touchstart", handleTouchStart, { passive: false });
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
-    window.addEventListener("touchend", handleTouchEnd);
+    window.addEventListener('resize', handleResize);
     
     return () => {
-      window.removeEventListener("wheel", handleWheel);
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener('resize', handleResize);
     };
-  }, [wheelDelta, touchStart]);
+  }, []);
 
   const maxZoomScroll = typeof window !== "undefined" ? window.innerHeight * 1.5 : 1000;
   const zoomScale = Math.min(0.1 + (wheelDelta / maxZoomScroll) * 0.9, 1.0);
@@ -240,8 +243,11 @@ function App() {
 
       <header className="relative h-screen w-full overflow-hidden">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat h-screen" 
-          style={{ backgroundImage: 'url("/image copy.png")' }}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat h-screen md:h-screen" 
+          style={{ 
+            backgroundImage: 'url("/image copy.png")',
+            height: typeof window !== "undefined" && window.innerWidth < 768 ? '80vh' : '100vh'
+          }}
         />
         
         {/* Navigation buttons at top */}
@@ -292,7 +298,12 @@ function App() {
 
         <div
           className="absolute inset-0 flex items-center justify-center"
-          style={{ transform: `scale(${zoomScale})`, transition: "transform 0.1s ease-out" }}
+          style={{ backgroundImage: 'url("/image copy.png")' }}
+          style={{ 
+            transform: `scale(${zoomScale})`, 
+            transition: "transform 0.1s ease-out",
+            height: typeof window !== "undefined" && window.innerWidth < 768 ? '80vh' : '100vh'
+          }}
         >
           <img src="/application.png" alt="Application" className="w-4/5 h-4/5 object-contain" />
         </div>

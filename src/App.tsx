@@ -291,7 +291,10 @@ function App() {
   };
 
   return (
-    <div className="bg-black">
+    <div className="bg-black relative">
+      {/* VHS Noise Background */}
+      <div className="fixed inset-0 vhs-noise vhs-grain pointer-events-none z-0"></div>
+      
       {/* Jumpscare Overlay */}
       {showJumpscare && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black transition-opacity duration-1000" 

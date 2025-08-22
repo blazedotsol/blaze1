@@ -120,16 +120,36 @@ function App() {
       console.error("Error generating image:", err);
       setError1(err?.message || "Failed to generate image");
     } finally {
+      console.log("Sending request to /api/generate-image");
+      const response = await fetch("/api/generate-image", {
+        method: "POST",
+        body: new FormData()
+      });
       setIsGenerating1(false);
     }
   };
 
   const generateOverlay = async () => {
     if (!uploadedImage2) {
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
+      
+      const responseText = await response.text();
+      console.log("Response text:", responseText);
+      
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        throw new Error(`Server returned invalid JSON: ${responseText.substring(0, 100)}...`);
+      }
       setError2("Please upload an image first");
       return;
     }
-
+    if (!response.ok) {
+      throw new Error(data?.error || `HTTP ${response.status}: ${responseText}`);
+    }
     setIsGenerating2(true);
     setError2(null);
     setGeneratedMeme2(null);

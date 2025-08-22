@@ -1,5 +1,5 @@
-const OpenAI = require("openai");
 const multiparty = require("multiparty");
+const sharp = require("sharp");
 
 exports.handler = async (event, context) => {
   // Enable CORS
@@ -57,32 +57,100 @@ exports.handler = async (event, context) => {
       };
     }
     
-    if (!process.env.OPENAI_API_KEY) {
+    if (!templateImageFile) {
       return {
         statusCode: 500,
         headers,
+        body: JSON.stringify({ error: "Missing template image" })
       }
     }
-    // Use image editing with the user's image as base
-    const out = await openai.images.edit({
-      model: "dall-e-2",
-      image: userImageBuffer,
-      prompt,
-      size,
-      response_format: "b64_json",
-    });
+
+    // Read image buffers
+    const fs = require('fs');
+    const userImageBuffer = fs.readFileSync(userImageFile.path);
+    const templateImageBuffer = fs.readFileSync(templateImageFile.path);
+
+    // Get image dimensions
+    const userImage = sharp(userImageBuffer);
+    const { width: userWidth, height: userHeight } = await userImage.metadata();
+    
+    const templateImage = sharp(templateImageBuffer);
+    const { width: templateWidth, height: templateHeight } = await templateImage.metadata();
+
+    // Calculate template size (make it about 15% of the user image width)
+    const targetTemplateWidth = Math.floor(userWidth * 0.15);
+    const targetTemplateHeight = Math.floor((templateHeight / templateWidth) * targetTemplateWidth);
+
+    // Position template in bottom-right area
+    const left = Math.floor(userWidth * 0.6);
+    const top = Math.floor(userHeight * 0.4);
+
+    // Resize template to fit
+    const resizedTemplate = await templateImage
+      .resize(targetTemplateWidth, targetTemplateHeight)
+      .png()
+      .toBuffer();
+
+    // Composite the images
+    let compositeImage;
+    if (type === "edit") {
+      // Place template as if character is holding it
+      compositeImage = await userImage
+        .composite([{
+          input: resizedTemplate,
+          top: top,
+          left: left,
+          blend: 'over'
+        }])
+        .png()
+        .toBuffer();
+    } else if (type === "overlay") {
+      // Create semi-transparent overlay effect
+      const transparentTemplate = await sharp(resizedTemplate)
+        .composite([{
+          input: Buffer.from(`<svg width="${targetTemplateWidth}" height="${targetTemplateHeight}">
+            <rect width="100%" height="100%" fill="white" opacity="0.3"/>
+          </svg>`),
+          blend: 'multiply'
+        }])
+        .png()
+        .toBuffer();
+
+      compositeImage = await userImage
+        .composite([{
+          input: transparentTemplate,
+          top: Math.floor(userHeight * 0.2),
+          left: Math.floor(userWidth * 0.2),
+          blend: 'overlay'
+        }])
+        .png()
+        .toBuffer();
+    } else {
+      // Default: just place template
+      compositeImage = await userImage
+        .composite([{
+          input: resizedTemplate,
+          top: top,
+          left: left,
+          blend: 'over'
+        }])
+        .png()
+        .toBuffer();
+    }
+
+    // Convert to base64
+    const base64Result = compositeImage.toString('base64');
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ imageBase64: out.data[0].b64_json })
+      body: JSON.stringify({ imageBase64: base64Result })
     };
   } catch (e) {
-    console.error("OpenAI error:", e);
-    const status = e?.status || e?.response?.status || 500;
-    const message = e?.message || e?.response?.data?.error?.message || "Image generation failed";
+    console.error("Image processing error:", e);
+    const message = e?.message || "Image processing failed";
     return {
-      statusCode: status,
+      statusCode: 500,
       headers,
       body: JSON.stringify({ error: message })
     };

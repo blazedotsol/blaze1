@@ -14,6 +14,15 @@ const openai = new OpenAI({
 });
 
 export default async function handler(req, res) {
+  // Add CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   // CORS headers
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -31,6 +40,7 @@ export default async function handler(req, res) {
       // LOGG for å se hva som faktisk kom inn:
       console.log("Files received:", Object.keys(files));
       console.log("Fields received:", Object.keys(fields));
+      console.log("Fields received:", Object.keys(fields));
 
       // NB: formidable gir arrays
       const userFile = files.userImage?.[0];
@@ -38,9 +48,11 @@ export default async function handler(req, res) {
       
       if (!userFile) {
         console.log("userFile missing, available files:", Object.keys(files));
+        console.log("userFile missing, available files:", Object.keys(files));
         return res.status(400).json({ error: "Missing userImage" });
       }
       if (!tplFile) {
+        console.log("tplFile missing, available files:", Object.keys(files));
         console.log("tplFile missing, available files:", Object.keys(files));
         return res.status(400).json({ error: "Missing templateImage" });
       }
@@ -61,6 +73,11 @@ export default async function handler(req, res) {
     } catch (e) {
       console.error("generate-image error:", e);
       const status = e?.status || e?.response?.status || 500;
+      const message = e?.message || "Image generation failed";
+      return res.status(status).json({
+        error: message,
+        details: e?.response?.data || null
+      });
       const message = e?.message || "Image generation failed";
       res.status(status).json({ error: message });
     }

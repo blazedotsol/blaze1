@@ -548,8 +548,6 @@ function App() {
       </section>
 
       <section className="min-h-screen bg-black py-16 px-4">
-        {/* Jumpscare Trigger */}
-        <div ref={jumpscareRef} className="h-1 w-full bg-transparent"></div>
         <div className="max-w-7xl mx-auto">
           <h2 className="text-white font-mono text-2xl md:text-4xl lg:text-5xl uppercase tracking-widest text-center mb-16 border-b border-white pb-4">
             lore
@@ -558,6 +556,9 @@ function App() {
           <div className="max-w-4xl mx-auto">
             <div className="bg-white p-8 rounded-lg">
               <h3 className="text-black font-mono text-xl uppercase tracking-wider mb-6">What Is the Job Application Meme?</h3>
+              
+              {/* Jumpscare Trigger - positioned in middle of content */}
+              <div ref={jumpscareRef} className="h-1 w-full bg-transparent"></div>
               
               <div className="text-black font-mono text-sm leading-relaxed space-y-4">
                 <p>

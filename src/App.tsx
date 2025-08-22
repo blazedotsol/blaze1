@@ -6,26 +6,25 @@ import { fileToDataUrl } from "./utils";
 async function generateJobApplicationImage(userImage: File): Promise<string> {
   try {
     const form = new FormData();
-    form.append("userImage", userImage);
+    form.append("userImage", userImage, "user.png");
     
     // Fetch template image and add to form
-    const templateBlob = await (await fetch("/image copy copy.png")).blob();
-    form.append("templateImage", templateBlob);
+    const tplBlob = await (await fetch("/image copy copy.png")).blob();
+    form.append("templateImage", tplBlob, "template.png");
 
     const res = await fetch("/api/generate-image", {
       method: "POST",
       body: form,
     });
 
-    const ct = res.headers.get("content-type") || "";
-    const data = ct.includes("application/json") ? await res.json() : { raw: await res.text() };
+    const data = await res.json();
 
     if (!res.ok) {
-      const msg = (data as any)?.error || (data as any)?.raw || `HTTP ${res.status}`;
+      const msg = data?.error || `HTTP ${res.status}`;
       throw new Error(msg);
     }
 
-    const dataUrl = (data as any)?.dataUrl;
+    const dataUrl = data?.dataUrl;
     if (!dataUrl) throw new Error("Empty response from API");
     return dataUrl;
   } catch (error: any) {

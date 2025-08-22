@@ -22,33 +22,39 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
 
-  const form = formidable({ multiples: true });
+  const form = formidable({ multiples: false });
   
   form.parse(req, async (err, fields, files) => {
     try {
       if (err) throw err;
 
-      const userImageFile = files.userImage?.[0];
-      const templateImageFile = files.templateImage?.[0];
+      // LOGG for å se hva som faktisk kom inn:
+      console.log("Files received:", Object.keys(files));
+      console.log("Fields received:", Object.keys(fields));
 
-      if (!userImageFile) {
+      // NB: formidable gir arrays
+      const userFile = files.userImage?.[0];
+      const tplFile = files.templateImage?.[0];
+      
+      if (!userFile) {
+        console.log("userFile missing, available files:", Object.keys(files));
         return res.status(400).json({ error: "Missing userImage" });
       }
-
-      if (!templateImageFile) {
+      if (!tplFile) {
+        console.log("tplFile missing, available files:", Object.keys(files));
         return res.status(400).json({ error: "Missing templateImage" });
       }
 
-      const baseStream = fs.createReadStream(userImageFile.filepath);
-      const paperStream = fs.createReadStream(templateImageFile.filepath);
+      const baseStream = fs.createReadStream(userFile.filepath);
+      const tplStream = fs.createReadStream(tplFile.filepath);
 
       const result = await openai.images.edits({
         model: "gpt-image-1",
-        prompt: 
+        prompt:
           'Make this figure/character in the uploaded photo hold this job application from the template. ' +
           'Place the job application naturally in their hands or in front of them. ' +
           "Don't change anything else about the image. Keep the same aspect ratio and style.",
-        image: [baseStream, paperStream],
+        image: [baseStream, tplStream], // VIKTIG: to bilder
         size: "1024x1024",
       });
 

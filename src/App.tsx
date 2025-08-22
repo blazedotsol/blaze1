@@ -191,7 +191,7 @@ function App() {
             {/* Block 1: Get your Job Application */}
             <div className="border border-white p-6 bg-black">
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-white font-mono text-lg">></span>
+                <span className="text-white font-mono text-lg">{">"}</span>
                 <h3 className="text-white font-mono text-lg uppercase tracking-wider">get your job application</h3>
               </div>
               

@@ -91,6 +91,22 @@ function App() {
     link.click();
   };
 
+  const handleDownloadTemplate = () => {
+    // Start throwing animation
+    setIsThrowingAnimation(true);
+    
+    // Reset animation after it completes
+    setTimeout(() => {
+      setIsThrowingAnimation(false);
+    }, 1000);
+    
+    // Download the template
+    const link = document.createElement('a');
+    link.href = '/image copy copy.png';
+    link.download = 'job-application-template.png';
+    link.click();
+  };
+
   useEffect(() => {
     const maxZoomScroll = window.innerHeight * 2;
 

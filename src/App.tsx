@@ -317,20 +317,30 @@ function App() {
       <section className="min-h-screen bg-black py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-white font-mono text-2xl md:text-4xl lg:text-5xl uppercase tracking-widest text-center mb-16 border-b border-white pb-4">
-            community tweets
+            lore
           </h2>
           
-          <div className="flex justify-center mb-8">
-            <div className="bg-white p-4 rounded-lg max-w-2xl w-full">
-              <a 
-                className="twitter-timeline" 
-                data-theme="light"
-                data-height="600"
-                data-chrome="noheader nofooter noborders transparent"
-                href="https://twitter.com/search?q=%23jobapplication%20OR%20%22job%20application%22%20OR%20%40jobapplicmeme&src=typed_query"
-              >
-                Tweets about Job Application
-              </a>
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white p-8 rounded-lg">
+              <h3 className="text-black font-mono text-xl uppercase tracking-wider mb-6">What Is the Job Application Meme?</h3>
+              
+              <div className="text-black font-mono text-sm leading-relaxed space-y-4">
+                <p>
+                  Out of all the scary things you might run into online, you probably wouldn't expect a job application form to be one of them. But for a lot of people, especially those too "chronically online" to think about employment, the idea of facing a job application has become a meme-worthy jumpscare.
+                </p>
+                
+                <p>
+                  The job application form meme, sometimes called the job application jumpscare, uses real or fake applications as a kind of horror prop in memes, TikToks, and reaction images. The joke is that the form itself is treated like a creepy monster that sneaks up on the unemployed.
+                </p>
+                
+                <p>
+                  The format first appeared in 2019 with a viral post of someone literally wearing a job application as a Halloween mask. Since then, it's evolved into a running gag — especially on TikTok in 2025 — where creators insert the form into videos as if it's a terrifying surprise.
+                </p>
+                
+                <p>
+                  In short: the meme works because it turns something normally boring and stressful into a universal internet joke about how scary "having a job" can feel.
+                </p>
+              </div>
             </div>
           </div>
           

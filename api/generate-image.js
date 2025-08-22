@@ -48,7 +48,7 @@ export default async function handler(req, res) {
       const baseStream = fs.createReadStream(userFile.filepath);
       const tplStream = fs.createReadStream(tplFile.filepath);
 
-      const result = await openai.images.edits({
+      const result = await openai.images.edit({
         model: "gpt-image-1",
         prompt:
           'Make this figure/character in the uploaded photo hold this job application from the template. ' +

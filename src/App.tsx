@@ -271,11 +271,11 @@ function App() {
             {/* Block 2: Download Template */}
             <div className="border border-black p-6 bg-white relative overflow-hidden">
               {/* Eminem background */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-20">
+              <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
                 <img 
                   src="/eminem.png" 
                   alt="Eminem" 
-                  className="w-full h-full object-cover"
+                  className="w-48 h-64 object-cover"
                 />
               </div>
               
@@ -285,7 +285,7 @@ function App() {
                   <img 
                     src="/application-side.png" 
                     alt="Throwing Application" 
-                    className="absolute w-16 h-20 throwing-application"
+                    className="absolute w-24 h-32 throwing-application"
                     style={{
                       left: '50%',
                       top: '70%',

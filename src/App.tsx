@@ -422,14 +422,14 @@ function App() {
       <section
         className={`min-h-screen bg-black flex items-center justify-center transition-opacity duration-500 pt-16 md:pt-0 py-32 ${
           isZoomComplete ? "opacity-100" : "opacity-100 md:opacity-0 md:pointer-events-none"
-        }`}
+        } mt-32`}
       >
         {/* VHS noise for this section too */}
         <div className="absolute inset-0 vhs-noise vhs-grain pointer-events-none z-0"></div>
         
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-white font-mono text-2xl md:text-4xl lg:text-5xl uppercase tracking-widest text-center mb-16 border-b border-white pb-4">
-            SUBMIT YOUR APPLICATION
+            SUBMIT YOUR $JOB APPLICATION
           </h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

@@ -141,7 +141,7 @@ function App() {
             // Hide jumpscare after 2 seconds
             setTimeout(() => {
               setShowJumpscare(false);
-            }, 2000);
+            }, 5000);
           }
         });
       },

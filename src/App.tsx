@@ -318,9 +318,18 @@ function App() {
       )}
 
       <header className="relative h-screen w-full overflow-hidden">
-        {/* VHS Effects Layers */}
-        <div className="absolute inset-0 vhs-scanlines pointer-events-none z-10"></div>
-        <div className="absolute inset-0 vhs-interference pointer-events-none z-10"></div>
+        {/* VHS Effects Layers - Multiple overlays for stronger effect */}
+        <div className="absolute inset-0 pointer-events-none z-10">
+          <div className="absolute inset-0 vhs-noise"></div>
+          <div className="absolute inset-0 vhs-grain"></div>
+          <div className="absolute inset-0 vhs-scanlines"></div>
+          <div className="absolute inset-0 vhs-interference"></div>
+          <div className="absolute inset-0 vhs-static"></div>
+          <div className="absolute inset-0 vhs-tracking"></div>
+          <div className="absolute inset-0 chromatic-aberration"></div>
+          <div className="absolute inset-0 vhs-flicker"></div>
+          <div className="absolute inset-0 tape-damage"></div>
+        </div>
         
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat h-screen md:h-screen" 
@@ -415,6 +424,9 @@ function App() {
           isZoomComplete ? "opacity-100" : "opacity-100 md:opacity-0 md:pointer-events-none"
         }`}
       >
+        {/* VHS noise for this section too */}
+        <div className="absolute inset-0 vhs-noise vhs-grain pointer-events-none z-0"></div>
+        
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-white font-mono text-2xl md:text-4xl lg:text-5xl uppercase tracking-widest text-center mb-16 border-b border-white pb-4">
             SUBMIT YOUR APPLICATION

@@ -420,7 +420,7 @@ function App() {
 
       {/* Meme Creation Section */}
       <section
-        className={`min-h-screen bg-black flex items-center justify-center transition-opacity duration-500 pt-16 md:pt-0 ${
+        className={`min-h-screen bg-black flex items-center justify-center transition-opacity duration-500 pt-16 md:pt-0 py-32 ${
           isZoomComplete ? "opacity-100" : "opacity-100 md:opacity-0 md:pointer-events-none"
         }`}
       >
@@ -547,7 +547,7 @@ function App() {
         </div>
       </section>
 
-      <section className="min-h-screen bg-black py-16 px-4">
+      <section className="min-h-screen bg-black py-32 px-4">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-white font-mono text-2xl md:text-4xl lg:text-5xl uppercase tracking-widest text-center mb-16 border-b border-white pb-4">
             lore
@@ -580,7 +580,7 @@ function App() {
             </div>
           </div>
           
-          <div className="text-center mt-16">
+          <div className="text-center mt-32">
             <a
               href="https://x.com/i/communities/1925625907995185617"
               target="_blank"

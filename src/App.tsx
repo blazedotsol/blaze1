@@ -316,13 +316,13 @@ function App() {
               onClick={handleCopyCA}
               className="text-white text-xs md:text-sm font-mono tracking-wider cursor-pointer hover:text-gray-300 transition-colors duration-200 mb-2 px-2 text-center"
             >
-              CA: scSdK1NCmLCLQrqGWTBXE7m7cPKe42nSsd2RzUGpump
+              <span className="hidden md:inline">CA: </span>scSdK1NCmLCLQrqGWTBXE7m7cPKe42nSsd2RzUGpump
             </div>
             <div
               onClick={handleCopyCA}
               className="text-gray-400 text-xs font-mono cursor-pointer hover:text-white transition-colors duration-200 text-center"
             >
-              {copied ? "✓ Copied!" : "(click to copy)"}
+              {copied ? "✓ Copied!" : <span><span className="md:hidden">(click to copy ca)</span><span className="hidden md:inline">(click to copy)</span></span>}
             </div>
           </div>
         </div>

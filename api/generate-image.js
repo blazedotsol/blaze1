@@ -50,9 +50,7 @@ export default async function handler(req, res) {
 
       const result = await openai.images.edit({
         model: "gpt-image-1",
-        prompt:
-          'Make this figure/character in the uploaded photo hold this job application from the template. ' +
-          'Place the job application naturally in their hands or in front of them. ' +
+        prompt: "Insert the provided job application image so the character is holding it. Do not modify the person, background, colors, lighting, style, proportions, or any other elements of the original image. Preserve all original details and resolution exactly as they are, except for adding the paper.",
           "Don't change anything else about the image. Keep the same aspect ratio and style.",
         image: [baseStream, tplStream], // VIKTIG: to bilder
         size: "1024x1024",

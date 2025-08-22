@@ -187,12 +187,12 @@ function App() {
       >
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-white font-mono text-2xl md:text-4xl lg:text-5xl uppercase tracking-widest text-center mb-16 border-b border-white pb-4">
-            create your meme
+            SUBMIT YOUR APPLICATION
           </h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Block 1: Get your Job Application */}
-            <div className="border border-white p-6 bg-black">
+            <div className="border border-white p-6 bg-gray-800">
               <div className="flex items-center gap-3 mb-4">
                 <span className="text-white font-mono text-lg">{">"}</span>
                 <h3 className="text-white font-mono text-lg uppercase tracking-wider">get your job application</h3>
@@ -207,7 +207,7 @@ function App() {
                     type="file"
                     accept="image/*"
                     onChange={handleImageUpload1}
-                    className="w-full bg-black border border-white text-white p-3 focus:border-gray-300 focus:outline-none file:bg-white file:text-black file:border-none file:px-4 file:py-2 file:mr-4 font-mono text-sm"
+                    className="w-full bg-gray-900 border border-white text-white p-3 focus:border-gray-300 focus:outline-none file:bg-white file:text-black file:border-none file:px-4 file:py-2 file:mr-4 font-mono text-sm"
                   />
                   {uploadedImage1 && (
                     <p className="text-white text-sm mt-2 font-mono">✓ {uploadedImage1.name}</p>
@@ -252,7 +252,7 @@ function App() {
             </div>
 
             {/* Block 2: Download Template */}
-            <div className="border border-white p-6 bg-black">
+            <div className="border border-white p-6 bg-gray-800">
               <div className="flex items-center gap-3 mb-4">
                 <span className="text-white font-mono text-lg">{">"}</span>
                 <h3 className="text-white font-mono text-lg uppercase tracking-wider">download template</h3>

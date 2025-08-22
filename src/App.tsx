@@ -309,7 +309,7 @@ function App() {
 
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 md:bottom-8" 
              style={{ 
-               bottom: typeof window !== "undefined" && window.innerWidth < 768 ? 'calc(2rem + 30px)' : '2rem'
+               bottom: typeof window !== "undefined" && window.innerWidth < 768 ? 'calc(2rem + 40px)' : '2rem'
              }}>
           <div className="text-center">
             <div

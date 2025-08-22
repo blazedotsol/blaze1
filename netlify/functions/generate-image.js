@@ -25,7 +25,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { prompt, size = "1024x1024", userImage, templateImage, type } = JSON.parse(event.body || '{}');
+    const { prompt, size = "1024x1024", userImage, type } = JSON.parse(event.body || '{}');
     
     if (!prompt) {
       return {
@@ -47,22 +47,24 @@ exports.handler = async (event, context) => {
     
     let out;
     
-    if (type === "edit" && userImage) {
-      // Use image editing with the user's uploaded image
-      const imageBuffer = Buffer.from(userImage, 'base64');
-      
-      out = await openai.images.edit({
-        model: "dall-e-2", // dall-e-2 supports image editing
-        image: imageBuffer,
-        prompt: prompt + (templateImage ? " Use the job application template provided as reference." : ""),
+    if (type === "variation" && userImage) {
+      // Create variations of the uploaded image
+      out = await openai.images.createVariation({
+        model: "dall-e-2",
+        image: Buffer.from(userImage, 'base64'),
+        n: 1,
         size,
         response_format: "b64_json",
       });
     } else {
-      // Fallback to regular generation
+      // Use regular generation with detailed prompt
+      const enhancedPrompt = userImage 
+        ? `${prompt} Style: realistic photo, high quality, detailed`
+        : prompt;
+        
       out = await openai.images.generate({
         model: "dall-e-3",
-        prompt,
+        prompt: enhancedPrompt,
         size,
         response_format: "b64_json",
       });

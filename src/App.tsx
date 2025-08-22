@@ -39,18 +39,14 @@ const loadJobApplicationTemplate = async (): Promise<string> => {
 // Generate image with job application
 async function generateJobApplicationImage(userImage: File, prompt: string): Promise<string> {
   try {
-    const userImageBase64 = await fileToBase64(userImage);
-    const templateBase64 = await loadJobApplicationTemplate();
-    
     const res = await fetch("/api/generate-image", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
         prompt,
-        userImage: userImageBase64,
-        templateImage: templateBase64,
+        userImage: await fileToBase64(userImage),
         size: "1024x1024",
-        type: "edit"
+        type: "generation" // Use generation instead of edit for now
       }),
     });
 
@@ -152,7 +148,7 @@ function App() {
     setGeneratedMeme1(null);
 
     try {
-      const prompt = "Make this figure/character on the uploaded photo hold the provided job application. Don't do any other changes on the image. Keep it as the same aspect ratio as the uploaded image. The job application should look like a paper document being held by the character.";
+      const prompt = "Make this figure/character hold a job application document. The job application should be a white paper document with text and form fields, held naturally by the character. Don't change any other part of the image. Keep the same aspect ratio and style.";
       const b64 = await generateJobApplicationImage(uploadedImage1, prompt);
       setGeneratedMeme1(`data:image/png;base64,${b64}`);
     } catch (err: any) {
@@ -174,7 +170,7 @@ function App() {
     setGeneratedMeme2(null);
 
     try {
-      const prompt = "Make an overlay when you blend the uploaded photo with the provided job application template. Keep it in the same aspect ratio as the uploaded image. Do not do any other changes than blending the photos. Create a subtle overlay effect.";
+      const prompt = "Create a subtle overlay effect blending this image with a job application document. The job application should appear as a semi-transparent overlay with form fields and text visible. Keep the same aspect ratio and don't change the base image significantly.";
       const b64 = await generateJobApplicationImage(uploadedImage2, prompt);
       setGeneratedMeme2(`data:image/png;base64,${b64}`);
     } catch (err: any) {

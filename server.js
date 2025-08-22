@@ -13,7 +13,7 @@ app.get("/api/health", (_req, res) => res.json({ ok: true, hasKey: !!process.env
 
 app.post("/api/generate-image", async (req, res) => {
   try {
-    const { prompt, size = "1024x1024", userImage, templateImage, type } = req.body || {};
+    const { prompt, size = "1024x1024", userImage, type } = req.body || {};
     if (!prompt) return res.status(400).json({ error: "Missing prompt" });
     if (!process.env.OPENAI_API_KEY) {
       return res.status(500).json({ error: "OPENAI_API_KEY is not set on the server" });
@@ -21,22 +21,24 @@ app.post("/api/generate-image", async (req, res) => {
 
     let out;
     
-    if (type === "edit" && userImage) {
-      // Use image editing with the user's uploaded image
-      const imageBuffer = Buffer.from(userImage, 'base64');
-      
-      out = await openai.images.edit({
-        model: "dall-e-2", // dall-e-2 supports image editing
-        image: imageBuffer,
-        prompt: prompt + (templateImage ? " Use the job application template provided as reference." : ""),
+    if (type === "variation" && userImage) {
+      // Create variations of the uploaded image
+      out = await openai.images.createVariation({
+        model: "dall-e-2",
+        image: Buffer.from(userImage, 'base64'),
+        n: 1,
         size,
         response_format: "b64_json",
       });
     } else {
-      // Fallback to regular generation
+      // Use regular generation with enhanced prompt
+      const enhancedPrompt = userImage 
+        ? `${prompt} Style: realistic photo, high quality, detailed`
+        : prompt;
+        
       out = await openai.images.generate({
         model: "dall-e-3",
-        prompt,
+        prompt: enhancedPrompt,
         size,
         response_format: "b64_json",
       });

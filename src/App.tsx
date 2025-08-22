@@ -240,7 +240,7 @@ function App() {
 
       <header className="relative h-screen w-full overflow-hidden">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat h-screen" 
           style={{ backgroundImage: 'url("/image copy.png")' }}
         />
         <div
@@ -257,17 +257,25 @@ function App() {
                 href="https://x.com/jobapplicmeme"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-black border border-white text-white px-3 py-2 hover:bg-white hover:text-black transition-all duration-200 text-xs md:text-sm uppercase tracking-wider text-center"
+                className="bg-black border border-white text-white px-2 py-2 hover:bg-white hover:text-black transition-all duration-200 text-xs md:text-sm uppercase tracking-wider text-center"
               >
                 x
               </a>
               <a
-                href="https://x.com/i/communities/1925625907995185617"
+                href="https://dexscreener.com/solana/emlddri7ppyvmvuni2zfbsshdzz9hd4yeyyn9hr85g4l"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-black border border-white text-white px-3 py-2 hover:bg-white hover:text-black transition-all duration-200 text-xs md:text-sm uppercase tracking-wider text-center"
+                className="bg-black border border-white text-white px-2 py-2 hover:bg-white hover:text-black transition-all duration-200 text-xs md:text-sm uppercase tracking-wider text-center"
               >
                 community
+              </a>
+              <a
+                href="https://dexscreener.com/solana/emlddri7ppyvmvuni2zfbsshdzz9hd4yeyyn9hr85g4l"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-black border border-white text-white px-2 py-2 hover:bg-white hover:text-black transition-all duration-200 text-xs md:text-sm uppercase tracking-wider text-center"
+              >
+                dex
               </a>
             </div>
             <div className="flex justify-center gap-2 px-4 mb-6 font-mono">
@@ -275,23 +283,15 @@ function App() {
                 href="https://pump.fun/coin/scSdK1NCmLCLQrqGWTBXE7m7cPKe42nSsd2RzUGpump"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-black border border-white text-white px-3 py-2 hover:bg-white hover:text-black transition-all duration-200 text-xs md:text-sm uppercase tracking-wider text-center"
+                className="bg-black border border-white text-white px-2 py-2 hover:bg-white hover:text-black transition-all duration-200 text-xs md:text-sm uppercase tracking-wider text-center"
               >
                 pump.fun
-              </a>
-              <a
-                href="https://dexscreener.com/solana/emlddri7ppyvmvuni2zfbsshdzz9hd4yeyyn9hr85g4l"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-black border border-white text-white px-3 py-2 hover:bg-white hover:text-black transition-all duration-200 text-xs md:text-sm uppercase tracking-wider text-center"
-              >
-                dex
               </a>
               <a
                 href="https://www.tiktok.com/search?q=job%20application&t=1755801808136"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-black border border-white text-white px-3 py-2 hover:bg-white hover:text-black transition-all duration-200 text-xs md:text-sm uppercase tracking-wider text-center"
+                className="bg-black border border-white text-white px-2 py-2 hover:bg-white hover:text-black transition-all duration-200 text-xs md:text-sm uppercase tracking-wider text-center"
               >
                 tiktok
               </a>
@@ -316,7 +316,7 @@ function App() {
       {/* Meme Creation Section */}
       <section
         className={`min-h-screen bg-black flex items-center justify-center transition-opacity duration-500 pt-16 md:pt-0 ${
-          isZoomComplete ? "opacity-100" : "opacity-30 md:opacity-0 md:pointer-events-none"
+          isZoomComplete ? "opacity-100" : "opacity-100 md:opacity-0 md:pointer-events-none"
         }`}
       >
         <div className="max-w-6xl mx-auto px-4">

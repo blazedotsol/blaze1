@@ -135,7 +135,28 @@ function App() {
     setGeneratedMeme2(null);
 
     try {
-      const dataUrl = await generateJobApplicationImage(uploadedImage2);
+      const form = new FormData();
+      form.append("userImage", uploadedImage2, "user.png");
+      form.append("mode", "overlay");
+      
+      // Fetch template image and add to form
+      const tplBlob = await (await fetch("/image copy copy.png")).blob();
+      form.append("templateImage", tplBlob, "template.png");
+
+      const res = await fetch("/api/generate-image", {
+        method: "POST",
+        body: form,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        const msg = data?.error || `HTTP ${res.status}`;
+        throw new Error(msg);
+      }
+
+      const dataUrl = data?.dataUrl;
+      if (!dataUrl) throw new Error("Empty response from API");
       setGeneratedMeme2(dataUrl);
     } catch (err: any) {
       console.error("Error generating image:", err);

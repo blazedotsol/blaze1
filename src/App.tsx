@@ -38,6 +38,7 @@ async function generateJobApplicationImage(userImage: File): Promise<string> {
 function App() {
   const [wheelDelta, setWheelDelta] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
 
   // Block 1 states
   const [isGenerating1, setIsGenerating1] = useState(false);
@@ -155,22 +156,48 @@ function App() {
     return () => observer.disconnect();
   }, [jumpscareTriggered]);
   useEffect(() => {
-    const maxZoomScroll = window.innerHeight * 2;
+    const maxZoomScroll = typeof window !== "undefined" ? window.innerHeight * 1.5 : 1000;
 
     const handleWheel = (e: WheelEvent) => {
-      if (wheelDelta < maxZoomScroll) {
+      e.preventDefault();
+      setWheelDelta((prev) => Math.min(prev + Math.abs(e.deltaY), maxZoomScroll));
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      setTouchStart(touch.clientY);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (touchStart === null) return;
+      
+      const touch = e.touches[0];
+      const diff = touchStart - touch.clientY;
+      
+      if (diff > 0) { // Scrolling up
         e.preventDefault();
-        setWheelDelta((prev) => Math.min(prev + Math.abs(e.deltaY), maxZoomScroll));
+        setWheelDelta((prev) => Math.min(prev + Math.abs(diff) * 2, maxZoomScroll));
       }
     };
 
+    const handleTouchEnd = () => {
+      setTouchStart(null);
+    };
+
     window.addEventListener("wheel", handleWheel, { passive: false });
+    window.addEventListener("touchstart", handleTouchStart, { passive: false });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleTouchEnd);
+    
     return () => {
       window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [wheelDelta]);
+  }, [wheelDelta, touchStart]);
 
-  const maxZoomScroll = typeof window !== "undefined" ? window.innerHeight * 2 : 1;
+  const maxZoomScroll = typeof window !== "undefined" ? window.innerHeight * 1.5 : 1000;
   const zoomScale = Math.min(0.1 + (wheelDelta / maxZoomScroll) * 0.9, 1.0);
   const isZoomComplete = wheelDelta >= maxZoomScroll;
 
@@ -286,7 +313,7 @@ function App() {
       {/* Meme Creation Section */}
       <section
         className={`min-h-screen bg-black flex items-center justify-center transition-opacity duration-500 pt-16 md:pt-0 ${
-          isZoomComplete ? "opacity-100" : "opacity-0 pointer-events-none"
+          isZoomComplete ? "opacity-100" : "opacity-30 md:opacity-0 md:pointer-events-none"
         }`}
       >
         <div className="max-w-6xl mx-auto px-4">

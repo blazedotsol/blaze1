@@ -477,14 +477,6 @@ function App() {
                   )}
                 </button>
                 
-                {/* Rate limit info */}
-                <div className="text-black text-xs font-mono mt-2 opacity-70">
-                  {(() => {
-                    const rateCheck = checkRateLimit();
-                    return `${rateCheck.remaining}/${MAX_GENERATIONS_PER_MINUTE} generations remaining`;
-                  })()}
-                </div>
-
                 {generatedMeme1 && (
                   <div className="mt-4">
                     <img src={generatedMeme1} alt="Generated Job Application Meme" className="w-full border border-black" />

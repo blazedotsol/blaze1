@@ -31,10 +31,17 @@ function App() {
   const [screenBlink, setScreenBlink] = useState(false);
   const jumpScareRef = useRef<HTMLDivElement>(null);
 
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedMeme, setGeneratedMeme] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [prompt, setPrompt] = useState("");
+  // Block 1 states
+  const [isGenerating1, setIsGenerating1] = useState(false);
+  const [uploadedImage1, setUploadedImage1] = useState<File | null>(null);
+  const [generatedMeme1, setGeneratedMeme1] = useState<string | null>(null);
+  const [error1, setError1] = useState<string | null>(null);
+
+  // Block 2 states
+  const [isGenerating2, setIsGenerating2] = useState(false);
+  const [uploadedImage2, setUploadedImage2] = useState<File | null>(null);
+  const [generatedMeme2, setGeneratedMeme2] = useState<string | null>(null);
+  const [error2, setError2] = useState<string | null>(null);
 
   // (uendret) enkel lyd
   const playScreamSound = () => {
@@ -67,19 +74,63 @@ function App() {
     }
   };
 
-  const generateMeme = async () => {
-    if (!prompt.trim()) return;
-    setIsGenerating(true);
-    setError(null);
-    setGeneratedMeme(null);
+  const handleImageUpload1 = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedImage1(file);
+      setError1(null);
+    }
+  };
+
+  const handleImageUpload2 = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedImage2(file);
+      setError2(null);
+    }
+  };
+
+  const generateJobApplication = async () => {
+    if (!uploadedImage1) {
+      setError1("Please upload an image first");
+      return;
+    }
+
+    setIsGenerating1(true);
+    setError1(null);
+    setGeneratedMeme1(null);
+
     try {
+      const prompt = "Make this figure/character on the uploaded photo hold this job application. Don't do any other changes on the image. Keep it as the same aspect ratio as the uploaded image. The job application should look like a paper document being held by the character.";
       const b64 = await generateImage(prompt);
-      setGeneratedMeme(`data:image/png;base64,${b64}`);
+      setGeneratedMeme1(`data:image/png;base64,${b64}`);
     } catch (err: any) {
       console.error("Error generating image:", err);
-      setError(err?.message || "Unknown error");
+      setError1(err?.message || "Failed to generate image");
     } finally {
-      setIsGenerating(false);
+      setIsGenerating1(false);
+    }
+  };
+
+  const generateOverlay = async () => {
+    if (!uploadedImage2) {
+      setError2("Please upload an image first");
+      return;
+    }
+
+    setIsGenerating2(true);
+    setError2(null);
+    setGeneratedMeme2(null);
+
+    try {
+      const prompt = "Make an overlay when you blend the uploaded photo with a job application template. Keep it in the same aspect ratio as the uploaded image. Do not do any other changes than blending the photos. Create a subtle overlay effect.";
+      const b64 = await generateImage(prompt);
+      setGeneratedMeme2(`data:image/png;base64,${b64}`);
+    } catch (err: any) {
+      console.error("Error generating image:", err);
+      setError2(err?.message || "Failed to generate image");
+    } finally {
+      setIsGenerating2(false);
     }
   };
 
@@ -238,16 +289,48 @@ function App() {
                   <input
                     type="file"
                     accept="image/*"
+                    onChange={handleImageUpload1}
                     className="w-full bg-black/50 border border-red-600/50 text-white p-3 rounded-lg focus:border-red-500 focus:outline-none file:bg-red-600 file:text-white file:border-none file:px-4 file:py-2 file:rounded file:mr-4"
                   />
+                  {uploadedImage1 && (
+                    <p className="text-green-400 text-sm mt-2">✓ {uploadedImage1.name}</p>
+                  )}
+                  {error1 && (
+                    <p className="text-red-400 text-sm mt-2">{error1}</p>
+                  )}
                 </div>
                 
                 <button
+                  onClick={generateJobApplication}
+                  disabled={isGenerating1 || !uploadedImage1}
                   className="w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold transition-all duration-300 flex items-center justify-center gap-2"
                 >
-                  <ImageIcon className="w-5 h-5" />
-                  Generate
+                  {isGenerating1 ? (
+                    <>
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="w-5 h-5" />
+                      Generate
+                    </>
+                  )}
                 </button>
+
+                {generatedMeme1 && (
+                  <div className="mt-4">
+                    <img src={generatedMeme1} alt="Generated Job Application Meme" className="w-full rounded-lg" />
+                    <a
+                      href={generatedMeme1}
+                      download="job-application-meme.png"
+                      className="mt-2 w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -266,16 +349,48 @@ function App() {
                   <input
                     type="file"
                     accept="image/*"
+                    onChange={handleImageUpload2}
                     className="w-full bg-black/50 border border-red-600/50 text-white p-3 rounded-lg focus:border-red-500 focus:outline-none file:bg-red-600 file:text-white file:border-none file:px-4 file:py-2 file:rounded file:mr-4"
                   />
+                  {uploadedImage2 && (
+                    <p className="text-green-400 text-sm mt-2">✓ {uploadedImage2.name}</p>
+                  )}
+                  {error2 && (
+                    <p className="text-red-400 text-sm mt-2">{error2}</p>
+                  )}
                 </div>
                 
                 <button
+                  onClick={generateOverlay}
+                  disabled={isGenerating2 || !uploadedImage2}
                   className="w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold transition-all duration-300 flex items-center justify-center gap-2"
                 >
-                  <ImageIcon className="w-5 h-5" />
-                  Generate Overlay
+                  {isGenerating2 ? (
+                    <>
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="w-5 h-5" />
+                      Generate Overlay
+                    </>
+                  )}
                 </button>
+
+                {generatedMeme2 && (
+                  <div className="mt-4">
+                    <img src={generatedMeme2} alt="Generated Overlay Meme" className="w-full rounded-lg" />
+                    <a
+                      href={generatedMeme2}
+                      download="job-application-overlay.png"
+                      className="mt-2 w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
 

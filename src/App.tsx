@@ -189,14 +189,6 @@ function App() {
           <div className="text-center">
             <div className="flex justify-center gap-4 px-4 mb-3">
               <a
-                href="https://www.tiktok.com/search?q=job%20application&t=1755801808136"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-black/80 backdrop-blur-sm border border-red-600/50 text-white px-6 py-3 rounded-lg hover:bg-red-900/50 hover:border-red-500 transition-all duration-300 text-base font-semibold"
-              >
-                TikTok
-              </a>
-              <a
                 href="https://x.com/jobapplicmeme"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -210,7 +202,15 @@ function App() {
                 rel="noopener noreferrer"
                 className="bg-black/80 backdrop-blur-sm border border-red-600/50 text-white px-6 py-3 rounded-lg hover:bg-red-900/50 hover:border-red-500 transition-all duration-300 text-base font-semibold"
               >
-                $JOB Community
+                Community
+              </a>
+              <a
+                href="https://pump.fun/coin/scSdK1NCmLCLQrqGWTBXE7m7cPKe42nSsd2RzUGpump"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-black/80 backdrop-blur-sm border border-red-600/50 text-white px-6 py-3 rounded-lg hover:bg-red-900/50 hover:border-red-500 transition-all duration-300 text-base font-semibold"
+              >
+                pump.fun
               </a>
               <a
                 href="https://dexscreener.com/solana/emlddri7ppyvmvuni2zfbsshdzz9hd4yeyyn9hr85g4l"
@@ -219,6 +219,14 @@ function App() {
                 className="bg-black/80 backdrop-blur-sm border border-red-600/50 text-white px-6 py-3 rounded-lg hover:bg-red-900/50 hover:border-red-500 transition-all duration-300 text-base font-semibold"
               >
                 DEX
+              </a>
+              <a
+                href="https://www.tiktok.com/search?q=job%20application&t=1755801808136"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-black/80 backdrop-blur-sm border border-red-600/50 text-white px-6 py-3 rounded-lg hover:bg-red-900/50 hover:border-red-500 transition-all duration-300 text-base font-semibold"
+              >
+                TikTok
               </a>
             </div>
 

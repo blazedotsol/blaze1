@@ -295,13 +295,11 @@ function App() {
               <p className="text-gray-700 mb-6 text-sm font-mono">get the original job application template!</p>
               
               <div className="space-y-4">
-                <div className="border border-black p-4 mb-4 bg-gray-100">
-                  <img 
-                    src="/eminem-app.jpg" 
-                    alt="Eminem Application" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                <img 
+                  src="/eminem-app.jpg" 
+                  alt="Eminem Application" 
+                  className="w-3/4 mx-auto mb-4"
+                />
                 
                 <button
                   onClick={handleDownloadTemplate}

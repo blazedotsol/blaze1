@@ -190,14 +190,14 @@ function App() {
       {showJumpscare && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
           <div className="relative w-full h-full flex items-center justify-center" style={{ animation: 'shake 0.5s infinite' }}>
-            {/* White flash overlay */}
-            <div className="absolute inset-0 bg-white opacity-95 animate-pulse" style={{ animation: 'flash 0.1s infinite' }}></div>
             <img 
               src="/boo.png" 
               alt="Jumpscare" 
               className="max-w-full max-h-full object-contain relative z-10"
             />
-            <div className="absolute inset-0 bg-red-600 opacity-50 animate-pulse"></div>
+            <div className="absolute inset-0 bg-red-600 opacity-30 animate-pulse"></div>
+            {/* White flash overlay - above everything */}
+            <div className="absolute inset-0 bg-white opacity-95 animate-pulse z-20" style={{ animation: 'flash 0.1s infinite' }}></div>
           </div>
         </div>
       )}

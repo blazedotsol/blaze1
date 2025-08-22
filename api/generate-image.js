@@ -37,7 +37,7 @@ export default async function handler(req, res) {
 
     // Generate image using DALL-E
     const out = await openai.images.generate({
-      model: "dall-e-3",
+      model: "gpt-image-1",
       prompt,
       size,
       response_format: "b64_json"

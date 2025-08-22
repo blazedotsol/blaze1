@@ -185,66 +185,66 @@ function App() {
           isZoomComplete ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
-        <div className="max-w-6xl mx-auto px-4 handdrawn-sketch">
-          <h2 className="text-white handdrawn-title text-3xl md:text-5xl lg:text-6xl text-center mb-16 handdrawn-underline wiggle">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="text-white font-mono text-2xl md:text-4xl lg:text-5xl uppercase tracking-widest text-center mb-16 border-b border-white pb-4">
             SUBMIT YOUR APPLICATION
           </h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Block 1: Get your Job Application */}
-            <div className="handdrawn-border p-6 wiggle" style={{ animationDelay: '0.5s' }}>
+            <div className="border border-white p-6 bg-white">
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-black handdrawn-text text-xl">→</span>
-                <h3 className="text-black handdrawn-text text-xl font-bold">Get Your Job Application!</h3>
+                <span className="text-black font-mono text-lg">{">"}</span>
+                <h3 className="text-black font-mono text-lg uppercase tracking-wider">get your job application</h3>
               </div>
               
-              <p className="text-gray-700 mb-6 text-base handdrawn-text">Upload an image and make the figure hold a job application!</p>
+              <p className="text-gray-700 mb-6 text-sm font-mono">upload an image and make the figure hold a job application!</p>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-black handdrawn-text text-base mb-2 font-medium">Upload Image:</label>
+                  <label className="block text-black font-mono text-sm mb-2 uppercase tracking-wider">upload image:</label>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleImageUpload1}
-                    className="w-full handdrawn-input text-black p-3 handdrawn-text text-sm file:handdrawn-button file:text-black file:px-4 file:py-2 file:mr-4 file:handdrawn-text"
+                    className="w-full bg-gray-100 border border-black text-black p-3 focus:border-gray-500 focus:outline-none file:bg-black file:text-white file:border-none file:px-4 file:py-2 file:mr-4 font-mono text-sm"
                   />
                   {uploadedImage1 && (
-                    <p className="text-green-600 text-sm mt-2 handdrawn-text">✓ {uploadedImage1.name}</p>
+                    <p className="text-black text-sm mt-2 font-mono">✓ {uploadedImage1.name}</p>
                   )}
                   {error1 && (
-                    <p className="text-red-600 text-sm mt-2 handdrawn-text">Oops! {error1}</p>
+                    <p className="text-red-600 text-sm mt-2 font-mono">error: {error1}</p>
                   )}
                 </div>
                 
                 <button
                   onClick={generateJobApplication}
                   disabled={isGenerating1 || !uploadedImage1}
-                  className="w-full handdrawn-button text-black px-6 py-3 handdrawn-text text-base font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full border border-black text-black px-6 py-3 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isGenerating1 ? (
                     <>
                       <RefreshCw className="w-5 h-5 animate-spin" />
-                      Creating Magic...
+                      generating...
                     </>
                   ) : (
                     <>
                       <ImageIcon className="w-5 h-5" />
-                      Create Application!
+                      generate
                     </>
                   )}
                 </button>
 
                 {generatedMeme1 && (
                   <div className="mt-4">
-                    <img src={generatedMeme1} alt="Generated Job Application Meme" className="w-full handdrawn-border" />
+                    <img src={generatedMeme1} alt="Generated Job Application Meme" className="w-full border border-black" />
                     <a
                       href={generatedMeme1}
                       download="job-application-meme.png"
-                      className="mt-2 w-full handdrawn-button text-black px-4 py-2 handdrawn-text text-base font-medium flex items-center justify-center gap-2"
+                      className="mt-2 w-full border border-black text-black px-4 py-2 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2"
                     >
                       <Download className="w-4 h-4" />
-                      Download My Creation!
+                      download
                     </a>
                   </div>
                 )}
@@ -252,16 +252,16 @@ function App() {
             </div>
 
             {/* Block 2: Download Template */}
-            <div className="handdrawn-border p-6 wiggle" style={{ animationDelay: '1s' }}>
+            <div className="border border-white p-6 bg-white">
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-black handdrawn-text text-xl">→</span>
-                <h3 className="text-black handdrawn-text text-xl font-bold">Download Template!</h3>
+                <span className="text-black font-mono text-lg">{">"}</span>
+                <h3 className="text-black font-mono text-lg uppercase tracking-wider">download template</h3>
               </div>
               
-              <p className="text-gray-700 mb-6 text-base handdrawn-text">Get the original job application template!</p>
+              <p className="text-gray-700 mb-6 text-sm font-mono">get the original job application template!</p>
               
               <div className="space-y-4">
-                <div className="handdrawn-border p-4 mb-4" style={{ background: '#f9f9f9' }}>
+                <div className="border border-black p-4 mb-4 bg-gray-100">
                   <img 
                     src="/image copy copy.png" 
                     alt="Job Application Template" 
@@ -272,10 +272,10 @@ function App() {
                 <a
                   href="/image copy copy.png"
                   download="job-application-template.png"
-                  className="w-full handdrawn-button text-black px-6 py-3 handdrawn-text text-base font-medium flex items-center justify-center gap-2"
+                  className="w-full border border-black text-black px-6 py-3 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   <Download className="w-5 h-5" />
-                  Get Template!
+                  download template
                 </a>
               </div>
             </div>
@@ -285,20 +285,20 @@ function App() {
 
       <section className="min-h-screen bg-black py-16 px-4">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-white handdrawn-title text-3xl md:text-5xl lg:text-6xl text-center mb-16 handdrawn-underline">
-            Meme Gallery
+          <h2 className="text-white font-mono text-2xl md:text-4xl lg:text-5xl uppercase tracking-widest text-center mb-16 border-b border-white pb-4">
+            meme gallery
           </h2>
           <div className="text-center mb-16">
-            <p className="text-gray-400 text-lg mb-8 handdrawn-text">Your generated memes will appear here!</p>
+            <p className="text-gray-400 text-lg mb-8 font-mono">your generated memes will appear here</p>
           </div>
           <div className="text-center mt-16">
             <a
               href="https://x.com/i/communities/1925625907995185617"
               target="_blank"
               rel="noopener noreferrer"
-              className="handdrawn-button !bg-black !text-white px-12 py-4 hover:!bg-white hover:!text-black handdrawn-text text-lg transition-colors duration-200 inline-block"
+              className="border border-white text-white px-12 py-4 hover:bg-white hover:text-black font-mono text-lg uppercase tracking-wider transition-colors duration-200 inline-block"
             >
-              Find More Memes in Our Community!
+              find more memes in our community
             </a>
           </div>
         </div>

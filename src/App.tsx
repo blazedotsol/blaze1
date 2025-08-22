@@ -47,6 +47,9 @@ function App() {
   const [error1, setError1] = useState<string | null>(null);
   const [isThrowingAnimation, setIsThrowingAnimation] = useState(false);
 
+  // Scroll delay state
+  const [scrollStartTime, setScrollStartTime] = useState<number | null>(null);
+  const [hasStartedScrolling, setHasStartedScrolling] = useState(false);
   // Jumpscare states
   const [showJumpscare, setShowJumpscare] = useState(false);
   const [jumpscareTriggered, setJumpscareTriggered] = useState(false);
@@ -174,6 +177,18 @@ function App() {
     } else {
       // Desktop: keep scroll-based zoom
       const handleWheel = (e: WheelEvent) => {
+        const currentTime = Date.now();
+        
+        if (!hasStartedScrolling) {
+          setHasStartedScrolling(true);
+          setScrollStartTime(currentTime);
+          return; // Don't apply zoom on first scroll
+        }
+        
+        if (scrollStartTime && currentTime - scrollStartTime < 1000) {
+          return; // Wait 1 second before allowing zoom
+        }
+        
         setWheelDelta((prev) => Math.min(prev + Math.abs(e.deltaY), maxZoomScroll));
       };
 
@@ -183,7 +198,7 @@ function App() {
         window.removeEventListener("wheel", handleWheel);
       };
     }
-  }, [wheelDelta]);
+  }, [wheelDelta, hasStartedScrolling, scrollStartTime]);
 
   // Separate effect for mobile detection and reset
   useEffect(() => {
@@ -192,6 +207,8 @@ function App() {
       if (!isMobile) {
         // Reset zoom when switching to desktop
         setWheelDelta(0);
+        setHasStartedScrolling(false);
+        setScrollStartTime(null);
       }
     };
 

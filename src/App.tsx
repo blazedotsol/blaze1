@@ -174,9 +174,12 @@ function App() {
       const touch = e.touches[0];
       const diff = touchStart - touch.clientY;
       
-      if (diff > 0) { // Scrolling up
+      if (diff > 5) { // Only trigger on significant upward swipe (5px threshold)
         e.preventDefault();
         setWheelDelta((prev) => Math.min(prev + Math.abs(diff) * 2, maxZoomScroll));
+      } else if (diff < -5) {
+        // Allow normal downward scrolling
+        return;
       }
     };
 

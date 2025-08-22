@@ -181,7 +181,7 @@ function App() {
 
       {/* Meme Creation Section */}
       <section
-        className={`min-h-screen bg-gray-900 flex items-center justify-center transition-opacity duration-500 ${
+        className={`min-h-screen bg-black flex items-center justify-center transition-opacity duration-500 ${
           isZoomComplete ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >

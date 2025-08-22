@@ -105,7 +105,7 @@ function App() {
             setShowJumpscare(true);
             
             // Play scream sound
-            const audio = new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.wav');
+            const audio = new Audio('/job.mp3');
             audio.volume = 0.5;
             audio.preload = 'auto';
             

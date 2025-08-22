@@ -305,8 +305,8 @@ function App() {
               <div className="space-y-4">
                 <div className="border border-black p-4 mb-4 bg-gray-100">
                   <img 
-                    src="/image copy copy.png" 
-                    alt="Job Application Template" 
+                    src="/eminem-app.jpg" 
+                    alt="Eminem Application" 
                     className="w-full max-w-48 mx-auto"
                   />
                 </div>

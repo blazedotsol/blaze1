@@ -270,14 +270,6 @@ function App() {
 
             {/* Block 2: Download Template */}
             <div className="border border-black p-6 bg-white relative overflow-hidden">
-              {/* Eminem background */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
-                <img 
-                  src="/eminem.png" 
-                  alt="Eminem" 
-                  className="w-48 h-64 object-cover"
-                />
-              </div>
               
               {/* Throwing application animation */}
               {isThrowingAnimation && (

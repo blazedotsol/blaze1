@@ -327,9 +327,9 @@ function App() {
                 data-theme="light"
                 data-height="600"
                 data-chrome="noheader nofooter noborders transparent"
-                href="https://twitter.com/i/communities/1925625907995185617"
+                href="https://twitter.com/search?q=%23jobapplication%20OR%20%22job%20application%22%20OR%20%40jobapplicmeme&src=typed_query"
               >
-                Tweets from Job Application Community
+                Tweets about Job Application
               </a>
             </div>
           </div>

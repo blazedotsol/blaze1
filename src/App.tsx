@@ -547,7 +547,7 @@ function App() {
         </div>
       </section>
 
-      <section className="min-h-screen bg-black py-16 px-4">
+      <section className="min-h-screen bg-black py-8 px-4">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-white font-mono text-2xl md:text-4xl lg:text-5xl uppercase tracking-widest text-center mb-16 border-b border-white pb-4">
             lore

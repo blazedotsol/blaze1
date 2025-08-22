@@ -14,21 +14,6 @@ const openai = new OpenAI({
 });
 
 export default async function handler(req, res) {
-  // Add CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  // CORS headers
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
 
   const form = formidable({ multiples: false });
@@ -37,23 +22,14 @@ export default async function handler(req, res) {
     try {
       if (err) throw err;
 
-      // LOGG for å se hva som faktisk kom inn:
-      console.log("Files received:", Object.keys(files));
-      console.log("Fields received:", Object.keys(fields));
-      console.log("Fields received:", Object.keys(fields));
-
       // NB: formidable gir arrays
       const userFile = files.userImage?.[0];
       const tplFile = files.templateImage?.[0];
       
       if (!userFile) {
-        console.log("userFile missing, available files:", Object.keys(files));
-        console.log("userFile missing, available files:", Object.keys(files));
         return res.status(400).json({ error: "Missing userImage" });
       }
       if (!tplFile) {
-        console.log("tplFile missing, available files:", Object.keys(files));
-        console.log("tplFile missing, available files:", Object.keys(files));
         return res.status(400).json({ error: "Missing templateImage" });
       }
 
@@ -63,7 +39,6 @@ export default async function handler(req, res) {
       const result = await openai.images.edit({
         model: "gpt-image-1",
         prompt: "Insert the provided job application image so the character is holding it. Do not modify the person, background, colors, lighting, style, proportions, or any other elements of the original image. Preserve all original details and resolution exactly as they are, except for adding the paper.",
-          "Don't change anything else about the image. Keep the same aspect ratio and style.",
         image: [baseStream, tplStream], // VIKTIG: to bilder
         size: "1024x1024",
       });
@@ -78,8 +53,6 @@ export default async function handler(req, res) {
         error: message,
         details: e?.response?.data || null
       });
-      const message = e?.message || "Image generation failed";
-      res.status(status).json({ error: message });
     }
   });
 }

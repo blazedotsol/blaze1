@@ -291,10 +291,7 @@ function App() {
   };
 
   return (
-    <div className="relative">
-      {/* Background overlay for better text readability */}
-      <div className="fixed inset-0 pointer-events-none z-0"></div>
-      
+    <div className="bg-black relative">
       {/* VHS Noise Background */}
       <div className="fixed inset-0 vhs-noise vhs-grain pointer-events-none z-0"></div>
       
@@ -423,13 +420,10 @@ function App() {
 
       {/* Meme Creation Section */}
       <section
-        className={`min-h-screen bg-black flex items-center justify-center transition-opacity duration-500 pt-16 md:pt-0 py-32 moving-background background-parallax background-zoom-pulse ${
+        className={`min-h-screen bg-black flex items-center justify-center transition-opacity duration-500 pt-16 md:pt-0 py-32 ${
           isZoomComplete ? "opacity-100" : "opacity-100 md:opacity-0 md:pointer-events-none"
-        } mt-32 bg-opacity-90`}
+        } mt-32`}
       >
-        {/* Background overlay for better text readability */}
-        <div className="absolute inset-0 background-overlay pointer-events-none z-0"></div>
-        
         {/* VHS noise for this section too */}
         <div className="absolute inset-0 vhs-noise vhs-grain pointer-events-none z-0"></div>
         
@@ -553,10 +547,7 @@ function App() {
         </div>
       </section>
 
-      <section className="min-h-screen bg-black bg-opacity-90 py-8 px-4 moving-background background-parallax background-zoom-pulse relative">
-        {/* Background overlay for better text readability */}
-        <div className="absolute inset-0 background-overlay pointer-events-none z-0"></div>
-        
+      <section className="min-h-screen bg-black py-8 px-4">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-white font-mono text-2xl md:text-4xl lg:text-5xl uppercase tracking-widest text-center mb-16 border-b border-white pb-4">
             lore

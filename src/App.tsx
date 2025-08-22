@@ -299,7 +299,7 @@ function App() {
                   <img 
                     src="/eminem-app.jpg" 
                     alt="Eminem Application" 
-                    className="w-full max-w-48 mx-auto"
+                    className="w-full h-full object-cover"
                   />
                 </div>
                 

@@ -39,12 +39,11 @@ export default async function handler(req, res) {
     const out = await openai.images.generate({
       model: "gpt-image-1",
       prompt,
-      size,
-      response_format: "b64_json"
+      size
     });
 
     // send tilbake base64
-    res.status(200).json({ imageBase64: out.data[0].b64_json });
+    res.status(200).json({ imageBase64: out.data[0].b64_json || out.data[0].url });
   } catch (e) {
     console.error("generate-image error:", e);
     const status = e?.status || e?.response?.status || 500;

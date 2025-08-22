@@ -105,12 +105,12 @@ function App() {
             setShowJumpscare(true);
             
             // Play scream sound
-            const audio = new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.wav');
+            const audio = new Audio('https://jumpshare.com/share/x2rGcEAyUxxZodKovjd7');
             audio.volume = 0.5;
             audio.preload = 'auto';
             
             // Debug: Check if audio file exists
-            console.log('Attempting to play scream sound from:', audio.src);
+            console.log('Attempting to play jumpscare scream from:', audio.src);
             
             // Load and play audio
             audio.addEventListener('loadstart', () => console.log('Audio loading started'));
@@ -190,12 +190,14 @@ function App() {
       {showJumpscare && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black animate-pulse">
           <div className="relative w-full h-full flex items-center justify-center" style={{ animation: 'shake 0.5s infinite' }}>
+            {/* White flash overlay */}
+            <div className="absolute inset-0 bg-white opacity-80 animate-pulse" style={{ animation: 'flash 0.1s infinite' }}></div>
             <img 
               src="/boo.png" 
               alt="Jumpscare" 
               className="max-w-full max-h-full object-contain"
             />
-            <div className="absolute inset-0 bg-red-600 opacity-20 animate-pulse"></div>
+            <div className="absolute inset-0 bg-red-600 opacity-30 animate-pulse"></div>
           </div>
         </div>
       )}

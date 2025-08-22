@@ -51,11 +51,6 @@ export default async function handler(req, res) {
       // Different prompts based on the request type or use a default
       let prompt = "Insert the provided job application image so the character is holding it. Do not modify the person, background, colors, lighting, style, proportions, or any other elements of the original image. Preserve all original details and resolution exactly as they are, except for adding the paper.";
       
-      // Check if this is an overlay request (you could add a field to distinguish)
-      if (fields.mode && fields.mode[0] === "overlay") {
-        prompt = "Overlay the provided job application image on top of the uploaded photo so it looks naturally integrated. Do not alter or redraw any part of the original photo — preserve all details, colors, lighting, proportions, and background exactly as they are. Only blend the job application paper onto the image, keeping the overall aspect ratio and resolution unchanged. The final result should look like the uploaded photo with the job application realistically overlaid on it, nothing else.";
-      }
-
       const result = await openai.images.edit({
         model: "gpt-image-1",
         prompt: prompt,

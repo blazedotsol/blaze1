@@ -125,7 +125,7 @@ function App() {
                 href="https://x.com/jobapplicmeme"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-black border border-white text-white px-4 py-2 hover:bg-white hover:text-black transition-all duration-200 text-sm uppercase tracking-wider w-24 text-center"
+                className="bg-black border border-white text-white px-4 py-2 hover:bg-white hover:text-black transition-all duration-200 text-sm uppercase tracking-wider text-center"
               >
                 x
               </a>
@@ -133,7 +133,7 @@ function App() {
                 href="https://x.com/i/communities/1925625907995185617"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-black border border-white text-white px-4 py-2 hover:bg-white hover:text-black transition-all duration-200 text-sm uppercase tracking-wider w-24 text-center"
+                className="bg-black border border-white text-white px-4 py-2 hover:bg-white hover:text-black transition-all duration-200 text-sm uppercase tracking-wider text-center"
               >
                 community
               </a>
@@ -141,7 +141,7 @@ function App() {
                 href="https://pump.fun/coin/scSdK1NCmLCLQrqGWTBXE7m7cPKe42nSsd2RzUGpump"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-black border border-white text-white px-4 py-2 hover:bg-white hover:text-black transition-all duration-200 text-sm uppercase tracking-wider w-24 text-center"
+                className="bg-black border border-white text-white px-4 py-2 hover:bg-white hover:text-black transition-all duration-200 text-sm uppercase tracking-wider text-center"
               >
                 pump.fun
               </a>
@@ -149,7 +149,7 @@ function App() {
                 href="https://dexscreener.com/solana/emlddri7ppyvmvuni2zfbsshdzz9hd4yeyyn9hr85g4l"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-black border border-white text-white px-4 py-2 hover:bg-white hover:text-black transition-all duration-200 text-sm uppercase tracking-wider w-24 text-center"
+                className="bg-black border border-white text-white px-4 py-2 hover:bg-white hover:text-black transition-all duration-200 text-sm uppercase tracking-wider text-center"
               >
                 dex
               </a>
@@ -157,7 +157,7 @@ function App() {
                 href="https://www.tiktok.com/search?q=job%20application&t=1755801808136"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-black border border-white text-white px-4 py-2 hover:bg-white hover:text-black transition-all duration-200 text-sm uppercase tracking-wider w-24 text-center"
+                className="bg-black border border-white text-white px-4 py-2 hover:bg-white hover:text-black transition-all duration-200 text-sm uppercase tracking-wider text-center"
               >
                 tiktok
               </a>

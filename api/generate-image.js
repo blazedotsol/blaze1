@@ -50,8 +50,7 @@ export default async function handler(req, res) {
 
       const result = await openai.images.edit({
         model: "gpt-image-1",
-        prompt: "Insert the provided job application image so the character is holding it. Do not modify the person, background, colors, lighting, style, proportions, or any other elements of the original image. Preserve all original details and resolution exactly as they are, except for adding the paper.",
-          "Don't change anything else about the image. Keep the same aspect ratio and style.",
+        prompt: "Insert the provided job application image so the character is holding it. Keep the uploaded photo completely unaltered: do not redraw or modify the person, background, colors, lighting, style, proportions, or any other details. Preserve every pixel of the original image exactly as it is, except for blending the job application paper naturally into the hands. Maintain the same aspect ratio, style, and resolution of the original photo.",
         image: [baseStream, tplStream], // VIKTIG: to bilder
         size: "1024x1024",
       });

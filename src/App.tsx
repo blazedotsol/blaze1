@@ -232,13 +232,13 @@ function App() {
 
             <div
               onClick={handleCopyCA}
-              className="text-white/70 text-sm font-mono tracking-wider cursor-pointer hover:text-white/90 transition-colors duration-200"
+              className="text-white/70 text-base font-mono tracking-wider cursor-pointer hover:text-white/90 transition-colors duration-200"
             >
               CA: scSdK1NCmLCLQrqGWTBXE7m7cPKe42nSsd2RzUGpump
             </div>
             <div
               onClick={handleCopyCA}
-              className="text-white/50 text-sm cursor-pointer hover:text-white/80 transition-colors duration-200 mt-1"
+              className="text-white/50 text-base cursor-pointer hover:text-white/80 transition-colors duration-200 mt-1"
             >
               {copied ? "✓ Copied!" : "(click to copy)"}
             </div>

@@ -49,7 +49,7 @@ export default async function handler(req, res) {
       const tplStream = fs.createReadStream(tplFile.filepath);
 
       // Different prompts based on the request type or use a default
-      let prompt = "Insert the provided job application image so the character is holding it. Do not modify the person, background, colors, lighting, style, proportions, or any other elements of the original image. Preserve all original details and resolution exactly as they are, except for adding the paper.";
+      let prompt = "Composite the provided job application onto the uploaded photo so it looks naturally held by the figure. Use the uploaded photo exactly as it is — do not redraw or modify any part of it. Every pixel must remain identical except for blending in the paper. Preserve the photo’s original aspect ratio, resolution, colors, and style.";
       
       const result = await openai.images.edit({
         model: "gpt-image-1",

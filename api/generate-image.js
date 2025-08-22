@@ -1,59 +1,100 @@
 // api/generate-image.js
-import OpenAI from "openai";
 import sharp from "sharp";
-import fetch from "node-fetch";
+
+function toBufferFromDataUrlOrBase64(s) {
+  if (!s) throw new Error("Empty base64 string");
+  const comma = s.indexOf(",");
+  const raw = comma >= 0 ? s.slice(comma + 1) : s;
+  return Buffer.from(raw, "base64");
+}
 
 export default async function handler(req, res) {
-  // CORS (trygt å ha på; same-origin i Vercel trenger det egentlig ikke)
+  // CORS headers
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method !== "POST") return res.status(405).json({ error: "Only POST allowed" });
+  if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
 
   try {
-    // For Vercel functions, we need to handle multipart data differently
-    // This is a simplified version - in production you'd use a proper multipart parser
-    let prompt = "Insert job application template into the image";
-    let size = "1024x1024";
-    let type = "edit";
-    
-    // Since Vercel functions don't easily handle multipart uploads,
-    // we'll create a composite image using sharp
-    
-    // Load the job application template
-    const templateResponse = await fetch('https://blazedotsol-blaze1-i-6k21.bolt.host/image%20copy%20copy.png');
-    const templateBuffer = await templateResponse.arrayBuffer();
-    
-    // For now, we'll use a placeholder approach since we can't easily get the user image
-    // In a real implementation, you'd need proper multipart handling
-    
-    // Create a composite image with the template
-    const compositeImage = await sharp(Buffer.from(templateBuffer))
-      .resize(400, 600)
-      .png()
-      .toBuffer();
-    
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({ error: "Missing OPENAI_API_KEY environment variable" });
+    const {
+      userImageBase64,
+      templateImageBase64,
+      templateUrl,
+      mode = "edit",
+      scalePctOfWidth = 0.15,
+      posX = 0.60,
+      posY = 0.40,
+      opacity = 0.7,
+    } = req.body;
+
+    if (!userImageBase64) {
+      return res.status(400).json({ error: "Missing userImageBase64" });
     }
 
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const userBuf = toBufferFromDataUrlOrBase64(userImageBase64);
 
-    // Use OpenAI to edit the image with the job application
-    const out = await openai.images.generate({
-      model: "gpt-image-1",
-      prompt: "A person holding a job application form, realistic style",
-      size
-    });
+    // Read base image dimensions
+    const baseImg = sharp(userBuf);
+    const baseMeta = await baseImg.metadata();
+    if (!baseMeta.width || !baseMeta.height) {
+      throw new Error("Could not read base image size");
+    }
 
-    // Return the generated image
-    res.status(200).json({ imageBase64: out.data[0].b64_json || out.data[0].url });
-  } catch (e) {
-    console.error("generate-image error:", e);
-    const status = e?.status || e?.response?.status || 500;
-    const message = e?.message || e?.response?.data?.error?.message || "Image generation failed";
-    res.status(status).json({ error: message });
+    // Get template image
+    let templateBuf = null;
+    if (templateImageBase64) {
+      templateBuf = toBufferFromDataUrlOrBase64(templateImageBase64);
+    } else if (templateUrl) {
+      // Fetch from public URL
+      const r = await fetch(templateUrl);
+      if (!r.ok) throw new Error(`Failed to fetch templateUrl: ${r.status}`);
+      const arr = await r.arrayBuffer();
+      templateBuf = Buffer.from(arr);
+    } else {
+      throw new Error("Provide templateImageBase64 or templateUrl");
+    }
+
+    const tplMeta = await sharp(templateBuf).metadata();
+    if (!tplMeta.width || !tplMeta.height) {
+      throw new Error("Could not read template image size");
+    }
+
+    // Calculate size and position
+    const targetW = Math.max(8, Math.round(baseMeta.width * scalePctOfWidth));
+    const scale = targetW / tplMeta.width;
+    const targetH = Math.max(8, Math.round(tplMeta.height * scale));
+
+    const left = Math.round(baseMeta.width * posX - targetW / 2);
+    const top = Math.round(baseMeta.height * posY - targetH / 2);
+
+    // Prepare template (resize + optional alpha)
+    let tpl = sharp(templateBuf).resize(targetW, targetH);
+    if (mode === "overlay") {
+      const withAlpha = await tpl.ensureAlpha(opacity).png().toBuffer();
+      tpl = sharp(withAlpha);
+    }
+
+    const tplBuffer = await tpl.png().toBuffer();
+
+    // Composite images
+    const outBuffer = await sharp(userBuf)
+      .composite([
+        {
+          input: tplBuffer,
+          left,
+          top,
+        },
+      ])
+      .png()
+      .toBuffer();
+
+    // Return base64 data URL
+    const base64 = outBuffer.toString("base64");
+    res.status(200).json({ dataUrl: `data:image/png;base64,${base64}` });
+  } catch (err) {
+    console.error("generate-image error:", err);
+    res.status(500).json({ error: err?.message || "Unexpected error" });
   }
 }

@@ -1,23 +1,27 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Sparkles, Download, RefreshCw, Image as ImageIcon } from "lucide-react";
+import { fileToDataUrl } from "./utils";
 
-// Generate image with job application using Netlify function
-async function generateJobApplicationImage(userImage: File, prompt: string, type: string): Promise<string> {
+// Generate image with job application using proper image composition
+async function generateJobApplicationImage(userImage: File, mode: string): Promise<string> {
   try {
-    // For now, send a simple request with the prompt
-    // The API will generate an image of a person holding a job application
-    const requestBody = {
-      prompt: `${prompt} - A person holding a job application form, professional setting`,
-      type: type,
-      size: '1024x1024'
-    };
+    const userImageBase64 = await fileToDataUrl(userImage);
+    const templateUrl = "/image copy copy.png";
 
     const res = await fetch("/api/generate-image", {
       method: "POST",
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify({
+        userImageBase64,
+        templateUrl,
+        mode: mode,
+        scalePctOfWidth: 0.15,
+        posX: 0.60,
+        posY: 0.40,
+        opacity: 0.75,
+      }),
     });
 
     const ct = res.headers.get("content-type") || "";
@@ -28,9 +32,9 @@ async function generateJobApplicationImage(userImage: File, prompt: string, type
       throw new Error(msg);
     }
 
-    const b64 = (data as any)?.imageBase64 || (data as any)?.image;
-    if (!b64) throw new Error("Empty response from API");
-    return b64;
+    const dataUrl = (data as any)?.dataUrl;
+    if (!dataUrl) throw new Error("Empty response from API");
+    return dataUrl;
   } catch (error: any) {
     if (error.message?.includes('fetch')) {
       throw new Error("Image generation service is temporarily unavailable. Please try again later.");
@@ -118,9 +122,8 @@ function App() {
     setGeneratedMeme1(null);
 
     try {
-      const prompt = "Generate an image of a person holding a job application form in their hands, professional office setting, realistic style";
-      const b64 = await generateJobApplicationImage(uploadedImage1, prompt, "edit");
-      setGeneratedMeme1(`data:image/png;base64,${b64}`);
+      const dataUrl = await generateJobApplicationImage(uploadedImage1, "edit");
+      setGeneratedMeme1(dataUrl);
     } catch (err: any) {
       console.error("Error generating image:", err);
       setError1(err?.message || "Failed to generate image");
@@ -140,9 +143,8 @@ function App() {
     setGeneratedMeme2(null);
 
     try {
-      const prompt = "Generate an image showing a job application form as an overlay effect, semi-transparent with visible form fields and text";
-      const b64 = await generateJobApplicationImage(uploadedImage2, prompt, "overlay");
-      setGeneratedMeme2(`data:image/png;base64,${b64}`);
+      const dataUrl = await generateJobApplicationImage(uploadedImage2, "overlay");
+      setGeneratedMeme2(dataUrl);
     } catch (err: any) {
       console.error("Error generating image:", err);
       setError2(err?.message || "Failed to generate image");

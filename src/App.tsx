@@ -237,30 +237,23 @@ function App() {
       
       return () => clearInterval(interval);
     } else {
-      // Desktop: keep scroll-based zoom
+      // Desktop: scroll triggers zoom, but page doesn't scroll until zoom is complete
       const handleWheel = (e: WheelEvent) => {
-        const currentTime = Date.now();
-        
-        if (!hasStartedScrolling) {
-          setHasStartedScrolling(true);
-          setScrollStartTime(currentTime);
-          return; // Don't apply zoom on first scroll
+        // Prevent default scrolling if zoom is not complete
+        if (wheelDelta < maxZoomScroll) {
+          e.preventDefault();
+          setWheelDelta((prev) => Math.min(prev + Math.abs(e.deltaY), maxZoomScroll));
         }
-        
-        if (scrollStartTime && currentTime - scrollStartTime < 1000) {
-          return; // Wait 1 second before allowing zoom
-        }
-        
-        setWheelDelta((prev) => Math.min(prev + Math.abs(e.deltaY), maxZoomScroll));
+        // If zoom is complete, allow normal scrolling (don't prevent default)
       };
 
-      window.addEventListener("wheel", handleWheel, { passive: true });
+      window.addEventListener("wheel", handleWheel, { passive: false });
       
       return () => {
         window.removeEventListener("wheel", handleWheel);
       };
     }
-  }, [wheelDelta, hasStartedScrolling, scrollStartTime]);
+  }, [wheelDelta]);
 
   // Separate effect for mobile detection and reset
   useEffect(() => {
@@ -269,8 +262,6 @@ function App() {
       if (!isMobile) {
         // Reset zoom when switching to desktop
         setWheelDelta(0);
-        setHasStartedScrolling(false);
-        setScrollStartTime(null);
       }
     };
 

@@ -217,90 +217,96 @@ function App() {
           isZoomComplete ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-white font-black text-4xl md:text-6xl lg:text-8xl tracking-wider text-center mb-16">
             CREATE YOUR MEME
           </h2>
 
-          <div className="bg-gray-900/50 backdrop-blur-sm border border-red-600/30 rounded-xl p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <Sparkles className="w-8 h-8 text-red-500" />
-              <h3 className="text-white font-bold text-2xl">Job Application Meme Creator</h3>
-            </div>
-
-            <p className="text-gray-300 mb-8 text-lg">Upload an image and AI will make the figure hold a job application!</p>
-
-            <div className="space-y-6">
-              <div>
-                <label className="block text-white font-semibold mb-3 text-lg">Describe your job application meme:</label>
-                <textarea
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="A person holding a job application form, looking desperate and tired..."
-                  className="w-full bg-black/50 border border-red-600/50 text-white p-4 rounded-lg focus:border-red-500 focus:outline-none resize-none"
-                  rows={4}
-                />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Block 1: Get your Job Application */}
+            <div className="bg-gray-900/50 backdrop-blur-sm border border-red-600/30 rounded-xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Sparkles className="w-6 h-6 text-red-500" />
+                <h3 className="text-white font-bold text-xl">Get your Job Application</h3>
               </div>
-
-              <button
-                onClick={generateMeme}
-                disabled={!prompt.trim() || isGenerating}
-                className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-8 py-4 rounded-lg font-bold text-xl transition-all duration-300 flex items-center justify-center gap-3"
-              >
-                {isGenerating ? (
-                  <>
-                    <RefreshCw className="w-6 h-6 animate-spin" />
-                    Creating Job Application Meme...
-                  </>
-                ) : (
-                  <>
-                    <ImageIcon className="w-6 h-6" />
-                    Create Job Application Meme
-                  </>
-                )}
-              </button>
-
-              {error && (
-                <div className="p-4 bg-red-900/20 border border-red-600/30 rounded-lg">
-                  <p className="text-red-200 text-sm mb-2">
-                    <strong>Error:</strong> {error}
-                  </p>
+              
+              <p className="text-gray-300 mb-6 text-sm">Upload an image and make the figure hold a job application!</p>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-white font-semibold mb-2">Upload Image:</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="w-full bg-black/50 border border-red-600/50 text-white p-3 rounded-lg focus:border-red-500 focus:outline-none file:bg-red-600 file:text-white file:border-none file:px-4 file:py-2 file:rounded file:mr-4"
+                  />
                 </div>
-              )}
+                
+                <button
+                  className="w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold transition-all duration-300 flex items-center justify-center gap-2"
+                >
+                  <ImageIcon className="w-5 h-5" />
+                  Generate
+                </button>
+              </div>
             </div>
 
-            {generatedMeme && (
-              <div className="mt-8 p-6 bg-black/30 rounded-lg border border-red-600/20">
-                <h4 className="text-white font-bold text-xl mb-4 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-red-500" />
-                  Your Job Application Meme
-                </h4>
+            {/* Block 2: Job Application Overlay */}
+            <div className="bg-gray-900/50 backdrop-blur-sm border border-red-600/30 rounded-xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Sparkles className="w-6 h-6 text-red-500" />
+                <h3 className="text-white font-bold text-xl">Job Application Overlay</h3>
+              </div>
+              
+              <p className="text-gray-300 mb-6 text-sm">Blend your image with the job application template!</p>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-white font-semibold mb-2">Upload Image:</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="w-full bg-black/50 border border-red-600/50 text-white p-3 rounded-lg focus:border-red-500 focus:outline-none file:bg-red-600 file:text-white file:border-none file:px-4 file:py-2 file:rounded file:mr-4"
+                  />
+                </div>
+                
+                <button
+                  className="w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold transition-all duration-300 flex items-center justify-center gap-2"
+                >
+                  <ImageIcon className="w-5 h-5" />
+                  Generate Overlay
+                </button>
+              </div>
+            </div>
+
+            {/* Block 3: Download Template */}
+            <div className="bg-gray-900/50 backdrop-blur-sm border border-red-600/30 rounded-xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Download className="w-6 h-6 text-red-500" />
+                <h3 className="text-white font-bold text-xl">Download Template</h3>
+              </div>
+              
+              <p className="text-gray-300 mb-6 text-sm">Get the original job application template!</p>
+              
+              <div className="space-y-4">
                 <div className="bg-white rounded-lg p-4 mb-4">
-                  <img src={generatedMeme} alt="Generated job application meme" className="w-full max-w-lg mx-auto rounded-lg" />
+                  <img 
+                    src="/image copy copy.png" 
+                    alt="Job Application Template" 
+                    className="w-full max-w-48 mx-auto rounded-lg"
+                  />
                 </div>
-                <div className="flex gap-4">
-                  <a
-                    href={generatedMeme}
-                    download="job-application-meme.png"
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-300 flex items-center justify-center gap-2"
-                  >
-                    <Download className="w-5 h-5" />
-                    Download
-                  </a>
-                  <button
-                    onClick={() => {
-                      setPrompt("");
-                      setGeneratedMeme(null);
-                      setError(null);
-                    }}
-                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-300 flex items-center justify-center gap-2"
-                  >
-                    <RefreshCw className="w-5 h-5" />
-                    Create Another
-                  </button>
-                </div>
+                
+                <a
+                  href="/image copy copy.png"
+                  download="job-application-template.png"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold transition-all duration-300 flex items-center justify-center gap-2"
+                >
+                  <Download className="w-5 h-5" />
+                  Download Template
+                </a>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </section>

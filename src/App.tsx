@@ -174,11 +174,10 @@ function App() {
     } else {
       // Desktop: keep scroll-based zoom
       const handleWheel = (e: WheelEvent) => {
-        e.preventDefault();
         setWheelDelta((prev) => Math.min(prev + Math.abs(e.deltaY), maxZoomScroll));
       };
 
-      window.addEventListener("wheel", handleWheel, { passive: false });
+      window.addEventListener("wheel", handleWheel, { passive: true });
       
       return () => {
         window.removeEventListener("wheel", handleWheel);

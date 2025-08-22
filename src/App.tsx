@@ -192,35 +192,35 @@ function App() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Block 1: Get your Job Application */}
-            <div className="border border-white p-6 bg-gray-800">
+            <div className="border border-white p-6 bg-white">
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-white font-mono text-lg">{">"}</span>
-                <h3 className="text-white font-mono text-lg uppercase tracking-wider">get your job application</h3>
+                <span className="text-black font-mono text-lg">{">"}</span>
+                <h3 className="text-black font-mono text-lg uppercase tracking-wider">get your job application</h3>
               </div>
               
-              <p className="text-gray-300 mb-6 text-sm font-mono">upload an image and make the figure hold a job application!</p>
+              <p className="text-gray-700 mb-6 text-sm font-mono">upload an image and make the figure hold a job application!</p>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-white font-mono text-sm mb-2 uppercase tracking-wider">upload image:</label>
+                  <label className="block text-black font-mono text-sm mb-2 uppercase tracking-wider">upload image:</label>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleImageUpload1}
-                    className="w-full bg-gray-900 border border-white text-white p-3 focus:border-gray-300 focus:outline-none file:bg-white file:text-black file:border-none file:px-4 file:py-2 file:mr-4 font-mono text-sm"
+                    className="w-full bg-gray-100 border border-black text-black p-3 focus:border-gray-500 focus:outline-none file:bg-black file:text-white file:border-none file:px-4 file:py-2 file:mr-4 font-mono text-sm"
                   />
                   {uploadedImage1 && (
-                    <p className="text-white text-sm mt-2 font-mono">✓ {uploadedImage1.name}</p>
+                    <p className="text-black text-sm mt-2 font-mono">✓ {uploadedImage1.name}</p>
                   )}
                   {error1 && (
-                    <p className="text-white text-sm mt-2 font-mono">error: {error1}</p>
+                    <p className="text-red-600 text-sm mt-2 font-mono">error: {error1}</p>
                   )}
                 </div>
                 
                 <button
                   onClick={generateJobApplication}
                   disabled={isGenerating1 || !uploadedImage1}
-                  className="w-full border border-white text-white px-6 py-3 hover:bg-white hover:text-black font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full border border-black text-black px-6 py-3 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isGenerating1 ? (
                     <>
@@ -237,11 +237,11 @@ function App() {
 
                 {generatedMeme1 && (
                   <div className="mt-4">
-                    <img src={generatedMeme1} alt="Generated Job Application Meme" className="w-full border border-white" />
+                    <img src={generatedMeme1} alt="Generated Job Application Meme" className="w-full border border-black" />
                     <a
                       href={generatedMeme1}
                       download="job-application-meme.png"
-                      className="mt-2 w-full border border-white text-white px-4 py-2 hover:bg-white hover:text-black font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2"
+                      className="mt-2 w-full border border-black text-black px-4 py-2 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2"
                     >
                       <Download className="w-4 h-4" />
                       download
@@ -252,16 +252,16 @@ function App() {
             </div>
 
             {/* Block 2: Download Template */}
-            <div className="border border-white p-6 bg-gray-800">
+            <div className="border border-white p-6 bg-white">
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-white font-mono text-lg">{">"}</span>
-                <h3 className="text-white font-mono text-lg uppercase tracking-wider">download template</h3>
+                <span className="text-black font-mono text-lg">{">"}</span>
+                <h3 className="text-black font-mono text-lg uppercase tracking-wider">download template</h3>
               </div>
               
-              <p className="text-gray-300 mb-6 text-sm font-mono">get the original job application template!</p>
+              <p className="text-gray-700 mb-6 text-sm font-mono">get the original job application template!</p>
               
               <div className="space-y-4">
-                <div className="border border-white p-4 mb-4 bg-white">
+                <div className="border border-black p-4 mb-4 bg-gray-100">
                   <img 
                     src="/image copy copy.png" 
                     alt="Job Application Template" 
@@ -272,7 +272,7 @@ function App() {
                 <a
                   href="/image copy copy.png"
                   download="job-application-template.png"
-                  className="w-full border border-white text-white px-6 py-3 hover:bg-white hover:text-black font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2"
+                  className="w-full border border-black text-black px-6 py-3 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   <Download className="w-5 h-5" />
                   download template

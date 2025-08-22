@@ -245,7 +245,7 @@ function App() {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat h-screen md:h-screen" 
           style={{ 
             backgroundImage: 'url("/image copy.png")',
-            height: typeof window !== "undefined" && window.innerWidth < 768 ? '80vh' : '100vh'
+            height: typeof window !== "undefined" && window.innerWidth < 768 ? '90vh' : '100vh'
           }}
         />
         
@@ -301,13 +301,16 @@ function App() {
           style={{ 
             transform: `scale(${zoomScale})`, 
             transition: "transform 0.1s ease-out",
-            height: typeof window !== "undefined" && window.innerWidth < 768 ? '80vh' : '100vh'
+            height: typeof window !== "undefined" && window.innerWidth < 768 ? '90vh' : '100vh'
           }}
         >
           <img src="/application.png" alt="Application" className="w-4/5 h-4/5 object-contain" />
         </div>
 
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 md:bottom-8" 
+             style={{ 
+               bottom: typeof window !== "undefined" && window.innerWidth < 768 ? '2rem' : '2rem'
+             }}>
           <div className="text-center">
             <div
               onClick={handleCopyCA}

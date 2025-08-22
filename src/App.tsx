@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Sparkles, Download, RefreshCw, Image as ImageIcon } from "lucide-react";
 
-// Generate image with job application using multipart form data
+// Generate image with job application using Netlify function
 async function generateJobApplicationImage(userImage: File, prompt: string, type: string): Promise<string> {
   try {
     // Create FormData for multipart upload
@@ -16,7 +16,8 @@ async function generateJobApplicationImage(userImage: File, prompt: string, type
     const templateBlob = await templateResponse.blob();
     formData.append('templateImage', templateBlob, 'template.png');
 
-    const res = await fetch("/api/generate-image", {
+    const res = await fetch("/.netlify/functions/generate-image", {
+      method: "POST",
       body: formData, // Send as multipart form data
     });
 
@@ -33,7 +34,7 @@ async function generateJobApplicationImage(userImage: File, prompt: string, type
     return b64;
   } catch (error: any) {
     if (error.message?.includes('fetch')) {
-      throw new Error("Backend server is not available. This feature only works in development mode.");
+      throw new Error("Image generation service is temporarily unavailable. Please try again later.");
     }
     throw error;
   }

@@ -1,8 +1,8 @@
-const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? "" : "https://your-vercel-app.vercel.app");
+const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 export const generateImage = async (prompt: string) => {
   try {
-    const apiUrl = `${API_BASE}/api/generate-image`;
+    const apiUrl = `/.netlify/functions/generate-image`;
     
     console.log('Calling API:', apiUrl);
     const r = await fetch(apiUrl, {
@@ -33,7 +33,7 @@ export const generateImage = async (prompt: string) => {
     return b64;
   } catch (error: any) {
     if (error.message?.includes('fetch')) {
-      throw new Error("Backend server is not available. This feature only works in development mode.");
+      throw new Error("Image generation service is temporarily unavailable. Please try again later.");
     }
     throw error;
   }
@@ -41,7 +41,7 @@ export const generateImage = async (prompt: string) => {
 
 export const checkHealth = async () => {
   try {
-    const r = await fetch(`${API_BASE}/api/health`);
+    const r = await fetch(`/.netlify/functions/hello`);
     return r.ok;
   } catch {
     return false;

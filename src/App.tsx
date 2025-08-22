@@ -106,10 +106,22 @@ function App() {
             
             // Play scream sound
             const audio = new Audio('/scream.mp3');
-            audio.volume = 0.3;
-            audio.play().catch(() => {
-              // Ignore audio play errors (autoplay restrictions)
-            });
+            audio.volume = 0.5;
+            audio.preload = 'auto';
+            
+            // Try to play with better error handling
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+              playPromise.then(() => {
+                console.log('Scream sound played successfully');
+              }).catch((error) => {
+                console.log('Audio play failed:', error);
+                // Try to play on user interaction
+                document.addEventListener('click', () => {
+                  audio.play().catch(console.log);
+                }, { once: true });
+              });
+            }
             
             // Hide jumpscare after 2 seconds
             setTimeout(() => {

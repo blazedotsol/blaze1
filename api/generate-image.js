@@ -17,7 +17,6 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  res.setHeader("Content-Type", "application/json");
 
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST")
@@ -28,9 +27,6 @@ export default async function handler(req, res) {
   form.parse(req, async (err, fields, files) => {
     try {
       if (err) throw err;
-
-      console.log("Received fields:", fields);
-      console.log("Received files:", Object.keys(files));
 
       const userFile = files.userImage?.[0];
       const tplFile = files.templateImage?.[0];
@@ -47,16 +43,17 @@ export default async function handler(req, res) {
 
       // Choose prompt based on "mode" field
       const mode = fields.mode?.[0] || "insert";
-      console.log("Using mode:", mode);
 
-      const insertPrompt = ` Add the provided job application so the figure is holding it.
+      const insertPrompt = `
+        Add the provided job application so the figure is holding it.
         Keep the photo unchanged in every detail — person, background, colors, lighting, style. Only insert the paper. Preserve aspect ratio and resolution.
       `.trim();
 
-      const overlayPrompt = `Overlay the uploaded employment/job application document so it fully covers the entire target image frame. Preserve all original details, text, and formatting of the document. Keep the background image fully visible behind the document, with natural blending so the paper looks overlaid rather than replacing the background.`.trim();
+      const overlayPrompt = `
+        Overlay the uploaded employment/job application document so it fully covers the entire target image frame. Preserve all original details, text, and formatting of the document. Keep the background image fully visible behind the document, with natural blending so the paper looks overlaid rather than replacing the background."
+      `.trim();
 
       const prompt = mode === "overlay" ? overlayPrompt : insertPrompt;
-      console.log("Using prompt:", prompt.substring(0, 100) + "...");
 
       // Preserve original size instead of forcing square
       const { width, height } = sizeOf(userFile.filepath);
@@ -78,14 +75,7 @@ export default async function handler(req, res) {
       console.error("generate-image error:", e);
       const status = e?.status || e?.response?.status || 500;
       const message = e?.message || "Image generation failed";
-      
-      // Ensure we always return JSON
-      try {
-        res.status(status).json({ error: message });
-      } catch (jsonError) {
-        console.error("Failed to send JSON response:", jsonError);
-        res.status(500).end();
-      }
+      res.status(status).json({ error: message });
     }
   });
 }

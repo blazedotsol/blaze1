@@ -148,23 +148,7 @@ function App() {
         body: form,
       });
 
-      let data;
-      try {
-        const text = await res.text();
-        console.log("Raw response:", text.substring(0, 200));
-        data = JSON.parse(text);
-      } catch (parseError) {
-        console.error("Failed to parse JSON:", parseError);
-        throw new Error("Server returned invalid response");
-      }
-      try {
-        const text = await res.text();
-        console.log("Raw response:", text.substring(0, 200));
-        data = JSON.parse(text);
-      } catch (parseError) {
-        console.error("Failed to parse JSON:", parseError);
-        throw new Error("Server returned invalid response");
-      }
+      const data = await res.json();
 
       if (!res.ok) {
         const msg = data?.error || `HTTP ${res.status}`;

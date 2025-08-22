@@ -251,7 +251,7 @@ function App() {
             {/* Block 2: Download Template */}
             <div className="border border-white p-6 bg-black">
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-white font-mono text-lg">></span>
+                <span className="text-white font-mono text-lg">{">"}</span>
                 <h3 className="text-white font-mono text-lg uppercase tracking-wider">download template</h3>
               </div>
               

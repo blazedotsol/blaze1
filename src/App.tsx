@@ -105,7 +105,7 @@ function App() {
             setShowJumpscare(true);
             
             // Play scream sound
-            const audio = new Audio('https://jumpshare.com/share/x2rGcEAyUxxZodKovjd7');
+            const audio = new Audio('/scream.mp3');
             audio.volume = 0.5;
             audio.preload = 'auto';
             

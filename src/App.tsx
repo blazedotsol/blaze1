@@ -109,19 +109,34 @@ function App() {
             audio.volume = 0.5;
             audio.preload = 'auto';
             
-            // Try to play with better error handling
-            const playPromise = audio.play();
-            if (playPromise !== undefined) {
-              playPromise.then(() => {
-                console.log('Scream sound played successfully');
-              }).catch((error) => {
-                console.log('Audio play failed:', error);
-                // Try to play on user interaction
-                document.addEventListener('click', () => {
-                  audio.play().catch(console.log);
-                }, { once: true });
+            // Debug: Check if audio file exists
+            console.log('Attempting to play scream sound from:', audio.src);
+            
+            // Load and play audio
+            audio.addEventListener('loadstart', () => console.log('Audio loading started'));
+            audio.addEventListener('canplay', () => console.log('Audio can play'));
+            audio.addEventListener('error', (e) => console.error('Audio error:', e));
+            
+            audio.load();
+            
+            // Try to play immediately
+            audio.play()
+              .then(() => {
+                console.log('✅ Scream sound played successfully!');
+              })
+              .catch((error) => {
+                console.error('❌ Audio play failed:', error);
+                console.log('Will try to play on next user interaction...');
+                
+                // Fallback: play on next click anywhere
+                const playOnClick = () => {
+                  audio.play()
+                    .then(() => console.log('✅ Scream played on user interaction'))
+                    .catch(err => console.error('❌ Still failed:', err));
+                  document.removeEventListener('click', playOnClick);
+                };
+                document.addEventListener('click', playOnClick);
               });
-            }
             
             // Hide jumpscare after 2 seconds
             setTimeout(() => {

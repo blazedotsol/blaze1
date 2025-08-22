@@ -239,12 +239,12 @@ function App() {
     } else {
       // Desktop: scroll triggers zoom, but page doesn't scroll until zoom is complete
       const handleWheel = (e: WheelEvent) => {
-        // Prevent default scrolling if zoom is not complete
-        if (wheelDelta < maxZoomScroll) {
+        // Prevent default scrolling if zoom is less than 70% complete
+        if (wheelDelta < maxZoomScroll * 0.7) {
           e.preventDefault();
           setWheelDelta((prev) => Math.min(prev + Math.abs(e.deltaY), maxZoomScroll));
         }
-        // If zoom is complete, allow normal scrolling (don't prevent default)
+        // If zoom is 70% complete, allow normal scrolling (don't prevent default)
       };
 
       window.addEventListener("wheel", handleWheel, { passive: false });
@@ -274,7 +274,7 @@ function App() {
 
   const maxZoomScroll = typeof window !== "undefined" ? window.innerHeight * 1.5 : 1000;
   const zoomScale = Math.min(0.1 + (wheelDelta / maxZoomScroll) * 0.9, 1.0);
-  const isZoomComplete = wheelDelta >= maxZoomScroll;
+  const isZoomComplete = wheelDelta >= maxZoomScroll * 0.7; // Enable scroll at 70% zoom
 
   const handleCopyCA = async () => {
     try {

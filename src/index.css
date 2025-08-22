@@ -637,11 +637,11 @@
     opacity: 1;
   }
   50% {
-    transform: translate(150px, -300px) rotate(45deg) scale(1.2);
+    transform: translate(150px, -300px) rotate(45deg) scale(3);
     opacity: 0.8;
   }
   100% {
-    transform: translate(250px, -600px) rotate(90deg) scale(0.8);
+    transform: translate(250px, -600px) rotate(90deg) scale(2.5);
     opacity: 0;
   }
 }

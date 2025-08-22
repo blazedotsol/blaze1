@@ -502,7 +502,7 @@ function App() {
                   <img 
                     src="/application-side.png" 
                     alt="Throwing Application" 
-                    className="absolute w-32 h-40 throwing-application z-50"
+                    className="absolute w-48 h-60 throwing-application z-50"
                     style={{
                       left: '50%',
                       top: '70%',

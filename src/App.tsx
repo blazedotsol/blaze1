@@ -4,21 +4,20 @@ import { Sparkles, Download, RefreshCw, Image as ImageIcon } from "lucide-react"
 // Generate image with job application using Netlify function
 async function generateJobApplicationImage(userImage: File, prompt: string, type: string): Promise<string> {
   try {
-    // Create FormData for multipart upload
-    const formData = new FormData();
-    formData.append('userImage', userImage);
-    formData.append('prompt', prompt);
-    formData.append('type', type);
-    formData.append('size', '1024x1024');
-    
-    // Load and append template image
-    const templateResponse = await fetch('/image copy copy.png');
-    const templateBlob = await templateResponse.blob();
-    formData.append('templateImage', templateBlob, 'template.png');
+    // For now, send a simple request with the prompt
+    // The API will generate an image of a person holding a job application
+    const requestBody = {
+      prompt: `${prompt} - A person holding a job application form, professional setting`,
+      type: type,
+      size: '1024x1024'
+    };
 
     const res = await fetch("/api/generate-image", {
       method: "POST",
-      body: formData, // Send as multipart form data
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
     });
 
     const ct = res.headers.get("content-type") || "";
@@ -119,7 +118,7 @@ function App() {
     setGeneratedMeme1(null);
 
     try {
-      const prompt = "Insert the provided job application image so the character is holding it. Match scale/perspective. Do not change any other part of the image.";
+      const prompt = "Generate an image of a person holding a job application form in their hands, professional office setting, realistic style";
       const b64 = await generateJobApplicationImage(uploadedImage1, prompt, "edit");
       setGeneratedMeme1(`data:image/png;base64,${b64}`);
     } catch (err: any) {
@@ -141,7 +140,7 @@ function App() {
     setGeneratedMeme2(null);
 
     try {
-      const prompt = "Blend the provided job application template as a subtle overlay on this image. Make it semi-transparent with visible form fields and text.";
+      const prompt = "Generate an image showing a job application form as an overlay effect, semi-transparent with visible form fields and text";
       const b64 = await generateJobApplicationImage(uploadedImage2, prompt, "overlay");
       setGeneratedMeme2(`data:image/png;base64,${b64}`);
     } catch (err: any) {

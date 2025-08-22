@@ -44,14 +44,11 @@ export default async function handler(req, res) {
       // Choose prompt based on "mode" field
       const mode = fields.mode?.[0] || "insert";
 
-      const insertPrompt = `
-        Add the provided job application so the figure is holding it.
+      const insertPrompt = ` Add the provided job application so the figure is holding it.
         Keep the photo unchanged in every detail — person, background, colors, lighting, style. Only insert the paper. Preserve aspect ratio and resolution.
       `.trim();
 
-      const overlayPrompt = `
-        Overlay the uploaded employment/job application document so it fully covers the entire target image frame. Preserve all original details, text, and formatting of the document. Keep the background image fully visible behind the document, with natural blending so the paper looks overlaid rather than replacing the background."
-      `.trim();
+      const overlayPrompt = `Overlay the uploaded employment/job application document so it fully covers the entire target image frame. Preserve all original details, text, and formatting of the document. Keep the background image fully visible behind the document, with natural blending so the paper looks overlaid rather than replacing the background.`.trim();
 
       const prompt = mode === "overlay" ? overlayPrompt : insertPrompt;
 

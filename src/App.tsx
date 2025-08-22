@@ -39,6 +39,10 @@ function App() {
   const [wheelDelta, setWheelDelta] = useState(0);
   const [copied, setCopied] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
+  
+  // Rate limiting constants
+  const MAX_GENERATIONS_PER_MINUTE = 3;
+  const RATE_LIMIT_KEY = 'jobapp_generations';
 
   // Block 1 states
   const [isGenerating1, setIsGenerating1] = useState(false);
@@ -47,6 +51,54 @@ function App() {
   const [error1, setError1] = useState<string | null>(null);
   const [isThrowingAnimation, setIsThrowingAnimation] = useState(false);
 
+  // Rate limiting helper functions
+  const checkRateLimit = (): { allowed: boolean; remaining: number; resetTime: number } => {
+    const now = Date.now();
+    const stored = localStorage.getItem(RATE_LIMIT_KEY);
+    
+    if (!stored) {
+      const newData = {
+        count: 0,
+        windowStart: now
+      };
+      localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(newData));
+      return { allowed: true, remaining: MAX_GENERATIONS_PER_MINUTE, resetTime: now + 60000 };
+    }
+    
+    const data = JSON.parse(stored);
+    const windowDuration = 60000; // 1 minute
+    
+    // Reset if window has passed
+    if (now - data.windowStart >= windowDuration) {
+      const newData = {
+        count: 0,
+        windowStart: now
+      };
+      localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(newData));
+      return { allowed: true, remaining: MAX_GENERATIONS_PER_MINUTE, resetTime: now + 60000 };
+    }
+    
+    // Check if limit exceeded
+    if (data.count >= MAX_GENERATIONS_PER_MINUTE) {
+      const resetTime = data.windowStart + windowDuration;
+      return { allowed: false, remaining: 0, resetTime };
+    }
+    
+    return { 
+      allowed: true, 
+      remaining: MAX_GENERATIONS_PER_MINUTE - data.count,
+      resetTime: data.windowStart + windowDuration
+    };
+  };
+  
+  const incrementRateLimit = () => {
+    const stored = localStorage.getItem(RATE_LIMIT_KEY);
+    if (stored) {
+      const data = JSON.parse(stored);
+      data.count += 1;
+      localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(data));
+    }
+  };
   // Scroll delay state
   const [scrollStartTime, setScrollStartTime] = useState<number | null>(null);
   const [hasStartedScrolling, setHasStartedScrolling] = useState(false);
@@ -68,11 +120,21 @@ function App() {
       return;
     }
 
+    // Check rate limit
+    const rateCheck = checkRateLimit();
+    if (!rateCheck.allowed) {
+      const resetIn = Math.ceil((rateCheck.resetTime - Date.now()) / 1000);
+      setError1(`Rate limit exceeded. Try again in ${resetIn} seconds. (Max ${MAX_GENERATIONS_PER_MINUTE} per minute)`);
+      return;
+    }
     setIsGenerating1(true);
     setError1(null);
     setGeneratedMeme1(null);
 
     try {
+      // Increment rate limit counter before making request
+      incrementRateLimit();
+      
       const dataUrl = await generateJobApplicationImage(uploadedImage1);
       setGeneratedMeme1(dataUrl);
     } catch (err: any) {
@@ -400,6 +462,14 @@ function App() {
                     </>
                   )}
                 </button>
+                
+                {/* Rate limit info */}
+                <div className="text-black text-xs font-mono mt-2 opacity-70">
+                  {(() => {
+                    const rateCheck = checkRateLimit();
+                    return `${rateCheck.remaining}/${MAX_GENERATIONS_PER_MINUTE} generations remaining`;
+                  })()}
+                </div>
 
                 {generatedMeme1 && (
                   <div className="mt-4">

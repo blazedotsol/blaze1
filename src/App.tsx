@@ -46,6 +46,10 @@ function App() {
   const [error1, setError1] = useState<string | null>(null);
   const [isThrowingAnimation, setIsThrowingAnimation] = useState(false);
 
+  // Jumpscare states
+  const [showJumpscare, setShowJumpscare] = useState(false);
+  const [jumpscareTriggered, setJumpscareTriggered] = useState(false);
+  const jumpscareRef = useRef<HTMLDivElement>(null);
   const handleImageUpload1 = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -91,6 +95,38 @@ function App() {
     link.click();
   };
 
+  // Jumpscare effect
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !jumpscareTriggered) {
+            setJumpscareTriggered(true);
+            setShowJumpscare(true);
+            
+            // Play scream sound
+            const audio = new Audio('/scream.mp3');
+            audio.volume = 0.3;
+            audio.play().catch(() => {
+              // Ignore audio play errors (autoplay restrictions)
+            });
+            
+            // Hide jumpscare after 2 seconds
+            setTimeout(() => {
+              setShowJumpscare(false);
+            }, 2000);
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    if (jumpscareRef.current) {
+      observer.observe(jumpscareRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [jumpscareTriggered]);
   useEffect(() => {
     const maxZoomScroll = window.innerHeight * 2;
 
@@ -123,6 +159,20 @@ function App() {
 
   return (
     <div className="bg-black">
+      {/* Jumpscare Overlay */}
+      {showJumpscare && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black animate-pulse">
+          <div className="relative w-full h-full flex items-center justify-center" style={{ animation: 'shake 0.5s infinite' }}>
+            <img 
+              src="/boo.png" 
+              alt="Jumpscare" 
+              className="max-w-full max-h-full object-contain"
+            />
+            <div className="absolute inset-0 bg-red-600 opacity-20 animate-pulse"></div>
+          </div>
+        </div>
+      )}
+
       <header className="relative h-screen w-full overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
@@ -314,6 +364,8 @@ function App() {
         </div>
       </section>
 
+      {/* Jumpscare Trigger */}
+      <div ref={jumpscareRef} className="h-1 w-full bg-transparent"></div>
       <section className="min-h-screen bg-black py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-white font-mono text-2xl md:text-4xl lg:text-5xl uppercase tracking-widest text-center mb-16 border-b border-white pb-4">

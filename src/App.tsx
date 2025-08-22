@@ -318,6 +318,10 @@ function App() {
       )}
 
       <header className="relative h-screen w-full overflow-hidden">
+        {/* VHS Effects Layers */}
+        <div className="absolute inset-0 vhs-scanlines pointer-events-none z-10"></div>
+        <div className="absolute inset-0 vhs-interference pointer-events-none z-10"></div>
+        
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat h-screen md:h-screen" 
           style={{ 

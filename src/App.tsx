@@ -111,6 +111,13 @@ function App() {
               // Ignore audio play errors (autoplay restrictions)
             });
             
+            // Play scream sound
+            const audio = new Audio('/scream.mp3');
+            audio.volume = 0.3;
+            audio.play().catch(() => {
+              // Ignore audio play errors (autoplay restrictions)
+            });
+            
             // Hide jumpscare after 2 seconds
             setTimeout(() => {
               setShowJumpscare(false);

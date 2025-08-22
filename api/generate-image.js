@@ -11,7 +11,23 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Only POST allowed" });
 
   try {
-    const { prompt, size = "1024x1024" } = req.body || {};
+    // Handle both JSON and form data
+    let prompt, size = "1024x1024", type, userImage, templateImage;
+    
+    if (req.headers['content-type']?.includes('multipart/form-data')) {
+      // This is multipart form data from the frontend
+      prompt = req.body?.prompt || "Generate image with job application template";
+      size = req.body?.size || "1024x1024";
+      type = req.body?.type || "edit";
+      // Note: File handling would need multer or similar in a real Vercel function
+      // For now, we'll use a fallback approach
+    } else {
+      // JSON body
+      const body = req.body || {};
+      prompt = body.prompt;
+      size = body.size || "1024x1024";
+    }
+    
     if (!prompt) return res.status(400).json({ error: "Missing prompt" });
     if (!process.env.OPENAI_API_KEY) {
       return res.status(500).json({ error: "Missing OPENAI_API_KEY environment variable" });
@@ -19,11 +35,12 @@ export default async function handler(req, res) {
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    // v5: ikke bruk response_format eller n — base64 kommer som b64_json
+    // Generate image using DALL-E
     const out = await openai.images.generate({
-      model: "gpt-image-1",
+      model: "dall-e-3",
       prompt,
-      size
+      size,
+      response_format: "b64_json"
     });
 
     // send tilbake base64

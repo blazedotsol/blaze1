@@ -76,13 +76,13 @@ function TokenHolderCounter() {
   return (
     <div className="text-center py-8 border-b border-white">
       <div className="text-white font-mono text-sm uppercase tracking-wider mb-2">
-        total holders
+        current job seekers
       </div>
       <div className="text-white font-mono text-3xl md:text-4xl lg:text-5xl uppercase tracking-widest">
         {holderCount?.toLocaleString() || "---"}
       </div>
       <div className="text-gray-400 font-mono text-xs uppercase tracking-wider mt-2">
-        $job token holders
+        $job application holders
       </div>
     </div>
   );

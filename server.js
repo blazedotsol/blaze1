@@ -11,72 +11,14 @@ app.use(cors({ origin: true }));
 app.use(express.json({ limit: "10mb" }));
 
 // Configure multer for file uploads
-const storage = multer.memoryStorage();
 const upload = multer({ 
-  storage: storage,
+  dest: 'uploads/',
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 app.get("/api/health", (_req, res) => res.json({ ok: true, hasKey: !!process.env.OPENAI_API_KEY }));
-
-app.get("/api/solscan/holders", async (req, res) => {
-  try {
-    const tokenMint = "scSdK1NCmLCLQrqGWTBXE7m7cPKe42nSsd2RzUGpump";
-    
-    // Use Helius RPC to get token accounts
-    const response = await fetch("https://mainnet.helius-rpc.com/?api-key=2bc8e75b-17b3-4414-8ad9-7e6a349f5deb", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: "1",
-        method: "getProgramAccounts",
-        params: [
-          "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", // SPL Token Program
-          {
-            encoding: "jsonParsed",
-            filters: [
-              {
-                dataSize: 165, // Token account data size
-              },
-              {
-                memcmp: {
-                  offset: 0,
-                  bytes: tokenMint,
-                },
-              },
-            ],
-          },
-        ],
-      }),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Helius RPC error: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    
-    if (data.error) {
-      throw new Error(`RPC error: ${data.error.message}`);
-    }
-    
-    // Filter out accounts with 0 balance and count unique holders
-    const holders = data.result?.filter(account => {
-      const tokenAmount = account.account?.data?.parsed?.info?.tokenAmount;
-      return tokenAmount && parseFloat(tokenAmount.amount) > 0;
-    }) || [];
-    
-    res.json({ total: holders.length });
-  } catch (error) {
-    console.error("Error fetching from Helius RPC:", error);
-    res.status(500).json({ error: "Failed to fetch holder data" });
-  }
-});
 
 app.post("/api/generate-image", upload.fields([
   { name: 'userImage', maxCount: 1 },

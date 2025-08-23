@@ -319,7 +319,10 @@ function App() {
 
       <header className="relative h-screen w-full overflow-hidden">
         {/* VHS Effects Layers - Multiple overlays for stronger effect */}
-        <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden" 
+             style={{ 
+               height: typeof window !== "undefined" && window.innerWidth < 768 ? '90vh' : '100vh'
+             }}>
           <div className="absolute inset-0 vhs-noise"></div>
           <div className="absolute inset-0 vhs-grain"></div>
           <div className="absolute inset-0 vhs-scanlines"></div>

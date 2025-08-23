@@ -16,45 +16,24 @@ function TokenHolderCounter() {
         
         const tokenAddress = "scSdK1NCmLCLQrqGWTBXE7m7cPKe42nSsd2RzUGpump";
         
-        // Try Solscan API with correct endpoint
-        try {
-          const solscanResponse = await fetch(`https://api.solscan.io/token/holders?token=${tokenAddress}&offset=0&size=1`);
-          
-          if (solscanResponse.ok) {
-            const data = await solscanResponse.json();
-            if (data.total) {
-              setHolderCount(data.total);
-              return;
-            }
-          }
-        } catch (e) {
-          console.log("Solscan API failed, trying alternative...");
+        // Get real holder count from Solscan API
+        const response = await fetch(`https://api.solscan.io/token/holders?token=${tokenAddress}&offset=0&size=1`);
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
         }
         
-        // Alternative: Try the token info endpoint
-        try {
-          const infoResponse = await fetch(`https://api.solscan.io/token/meta?token=${tokenAddress}`);
-          if (infoResponse.ok) {
-            const data = await infoResponse.json();
-            if (data.holder || data.holders) {
-              setHolderCount(data.holder || data.holders);
-              return;
-            }
-          }
-        } catch (e) {
-          console.log("Token info API failed, using fallback...");
-        }
+        const data = await response.json();
         
-        // Fallback: Use the actual count from Solscan with small variation
-        const baseCount = 813; // Based on actual Solscan data
-        const randomIncrement = Math.floor(Math.random() * 5) + 1;
-        setHolderCount(baseCount + randomIncrement);
+        if (data.total && typeof data.total === 'number') {
+          setHolderCount(data.total);
+        } else {
+          throw new Error('Invalid response format');
+        }
         
       } catch (err) {
         console.error("Error fetching holder count:", err);
-        setError("Failed to load");
-        // Set the actual count as fallback
-        setHolderCount(813);
+        setError("Failed to load holder count");
       } finally {
         setLoading(false);
       }

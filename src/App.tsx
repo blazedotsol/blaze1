@@ -386,20 +386,12 @@ function App() {
         </div>
 
         <div
-          className="absolute inset-0 flex items-center justify-center bg-cover bg-center bg-no-repeat"
-          style={{ 
-            backgroundImage: 'url("/image copy.png")',
-            height: '100%'
-          }}
-        >
-          <img src="/application.png" alt="Application" className="w-4/5 h-4/5 object-contain" />
-        </div>
-
-        <div 
           className="absolute inset-0 flex items-center justify-center"
+          style={{ backgroundImage: 'url("/image copy.png")' }}
           style={{ 
             transform: `scale(${zoomScale})`, 
             transition: "transform 0.1s ease-out",
+            height: typeof window !== "undefined" && window.innerWidth < 768 ? '90vh' : '100vh'
           }}
         >
           <img src="/application.png" alt="Application" className="w-4/5 h-4/5 object-contain" />

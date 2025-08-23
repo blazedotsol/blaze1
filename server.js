@@ -11,8 +11,9 @@ app.use(cors({ origin: true }));
 app.use(express.json({ limit: "10mb" }));
 
 // Configure multer for file uploads
+const storage = multer.memoryStorage();
 const upload = multer({ 
-  dest: 'uploads/',
+  storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 

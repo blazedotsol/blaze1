@@ -20,6 +20,23 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 app.get("/api/health", (_req, res) => res.json({ ok: true, hasKey: !!process.env.OPENAI_API_KEY }));
 
+app.get("/api/solscan/holders", async (req, res) => {
+  try {
+    const tokenAddress = "scSdK1NCmLCLQrqGWTBXE7m7cPKe42nSsd2RzUGpump";
+    const response = await fetch(`https://api.solscan.io/token/holders?token=${tokenAddress}&offset=0&size=1`);
+    
+    if (!response.ok) {
+      throw new Error(`Solscan API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error("Error fetching from Solscan:", error);
+    res.status(500).json({ error: "Failed to fetch holder data" });
+  }
+});
+
 app.post("/api/generate-image", upload.fields([
   { name: 'userImage', maxCount: 1 },
   { name: 'templateImage', maxCount: 1 }

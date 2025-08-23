@@ -14,10 +14,8 @@ function TokenHolderCounter() {
         setLoading(true);
         setError(null);
         
-        const tokenAddress = "scSdK1NCmLCLQrqGWTBXE7m7cPKe42nSsd2RzUGpump";
-        
-        // Get real holder count from Solscan API
-        const response = await fetch(`https://api.solscan.io/token/holders?token=${tokenAddress}&offset=0&size=1`);
+        // Use local proxy to avoid CORS issues
+        const response = await fetch('/api/solscan/holders');
         
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`);

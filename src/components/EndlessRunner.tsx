@@ -449,6 +449,9 @@ const JobApplicationSweeper: React.FC = () => {
     
     const nameContainer = document.getElementById('sweeper-name-container');
     if (nameContainer) nameContainer.style.display = 'none';
+    
+    // Clear the input field
+    nameInput.value = '';
   };
 
   const updateLeaderboard = () => {
@@ -457,28 +460,42 @@ const JobApplicationSweeper: React.FC = () => {
     if (!tbody) return;
     
     tbody.innerHTML = '';
-    scores.forEach((score: any, index: number) => {
+    
+    if (scores.length === 0) {
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td class="border-2 border-white p-3">${index + 1}</td>
-        <td class="border-2 border-white p-3">${score.name}</td>
-        <td class="border-2 border-white p-3">${score.time}</td>
+        <td colspan="3" class="border-2 border-white p-3 text-center text-gray-400">No scores yet - be the first!</td>
       `;
       tbody.appendChild(row);
-    });
+    } else {
+      scores.forEach((score: any, index: number) => {
+        const row = document.createElement('tr');
+        row.className = index < 3 ? 'bg-yellow-100 text-black' : '';
+        row.innerHTML = `
+          <td class="border-2 border-white p-3 text-center">${index + 1}</td>
+          <td class="border-2 border-white p-3 text-center">${score.name}</td>
+          <td class="border-2 border-white p-3 text-center">${score.time}s</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
   };
 
   const shareScore = () => {
     const gameState = gameStateRef.current;
     const nameInput = document.getElementById('sweeper-player-name') as HTMLInputElement;
     
-    if (!nameInput) return;
+    if (!nameInput || !gameState.currentScore) return;
     
     const name = nameInput.value.trim() || 'Anonymous';
     
     // Get current rank
     const scores = JSON.parse(localStorage.getItem('minesweeperScores') || '[]');
-    const currentRank = scores.findIndex((score: any) => score.name === name && score.time === gameState.currentScore) + 1;
+    
+    // Find the rank by sorting all scores including current one
+    const allScores = [...scores, { name, time: gameState.currentScore }];
+    allScores.sort((a: any, b: any) => a.time - b.time);
+    const currentRank = allScores.findIndex((score: any) => score.name === name && score.time === gameState.currentScore) + 1;
     
     const text = encodeURIComponent(`I spent ${gameState.currentScore} seconds finishing the Job Application Sweeper game and ranked as #${currentRank}.\n\nTry to you beat me here: https://www.jobapplication.meme/`);
     const url = `https://x.com/intent/tweet?text=${text}`;
@@ -561,7 +578,50 @@ const JobApplicationSweeper: React.FC = () => {
       
       <div className="mt-10 max-w-lg mx-auto flex flex-col items-center">
         <h3 className="text-white font-mono text-2xl mb-6">Leaderboard</h3>
-        <table className="w-full border-2 border-white text-white font-mono text-base mx-auto">
+        <div className="w-full max-w-md">
+          <table className="w-full border-2 border-white text-white font-mono text-sm mx-auto">
+            <thead>
+              <tr className="bg-white text-black">
+                <th className="border-2 border-black p-2 text-center">Rank</th>
+                <th className="border-2 border-black p-2 text-center">Name</th>
+                <th className="border-2 border-black p-2 text-center">Time</th>
+              </tr>
+            </thead>
+            <tbody id="sweeper-leaderboard-body"></tbody>
+          </table>
+          
+          <div className="mt-4 text-center">
+            <button 
+              onClick={() => {
+                if (confirm('Are you sure you want to clear all scores?')) {
+                  localStorage.removeItem('minesweeperScores');
+                  updateLeaderboard();
+                }
+              }}
+              className="bg-red-600 text-white px-4 py-2 font-mono text-xs hover:bg-red-700 transition-colors border border-red-800"
+            >
+              Clear Leaderboard
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div className="mt-8 text-white font-mono text-sm max-w-2xl mx-auto text-center">
+        <h4 className="text-base mb-4">How to play:</h4>
+        <div className="text-center space-y-1 text-xs">
+          <p>• Toggle between Click mode (reveal cells) and Flag mode (flag applications)</p>
+          <p>• Right click also flags applications in any mode</p>
+          <p>• You have maximum 10 flags to use</p>
+          <p>• Numbers show how many applications are adjacent to that cell</p>
+          <p>• Avoid clicking on the hidden job applications!</p>
+          <p>• Flag all applications and reveal all safe cells to win</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default JobApplicationSweeper;
           <thead>
             <tr className="bg-white text-black">
               <th className="border-2 border-black p-3">Rank</th>

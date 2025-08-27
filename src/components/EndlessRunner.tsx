@@ -437,7 +437,7 @@ const JobApplicationSweeper: React.FC = () => {
         <button 
           id="mode-toggle-button"
           onClick={toggleMode}
-          className="bg-blue-600 text-white px-8 py-4 font-mono text-xl hover:bg-blue-700 transition-colors border-2 border-blue-800 rounded"
+          className="bg-black text-white px-6 py-3 font-mono text-lg hover:bg-white hover:text-black transition-colors border-2 border-white mr-3"
         >
           Mode: Click 👆
         </button>

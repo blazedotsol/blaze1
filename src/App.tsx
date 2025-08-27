@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Sparkles, Download, RefreshCw, Image as ImageIcon } from "lucide-react";
 import { fileToDataUrl } from "./utils";
+import EndlessRunner from "./components/EndlessRunner";
 
 // Generate image with job application using proper image composition
 async function generateJobApplicationImage(userImage: File): Promise<string> {
@@ -537,6 +538,31 @@ function App() {
                   download template
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Games Section */}
+      <section className="min-h-screen bg-black py-8 px-4">
+        <div className="absolute inset-0 vhs-noise vhs-grain pointer-events-none z-0"></div>
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <h2 className="text-white font-mono text-2xl md:text-4xl lg:text-5xl uppercase tracking-widest text-center mb-16 border-b border-white pb-4">
+            games
+          </h2>
+          
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white p-8 rounded-lg mb-8">
+              <h3 className="text-black font-mono text-xl uppercase tracking-wider mb-6 text-center">
+                Endless Runner: Escape the Job Application
+              </h3>
+              
+              <div className="text-black font-mono text-sm leading-relaxed mb-6 text-center">
+                <p>Run away from the terrifying job application! Jump over obstacles, slide under barriers, and collect coins to survive as long as possible.</p>
+              </div>
+              
+              <EndlessRunner />
             </div>
           </div>
         </div>

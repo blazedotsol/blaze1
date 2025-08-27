@@ -363,7 +363,7 @@ const JobApplicationSweeper: React.FC = () => {
   };
 
   return (
-    <div className="text-center">
+    <div className="flex flex-col items-center justify-center text-center">
       <div className="mb-6">
         <button 
           onClick={() => startGame('easy')}
@@ -377,7 +377,7 @@ const JobApplicationSweeper: React.FC = () => {
         ref={canvasRef}
         onClick={handleClick}
         onContextMenu={handleRightClick}
-        className="border-4 border-white bg-gray-300 mb-6 shadow-lg"
+        className="border-4 border-white bg-gray-300 mb-6 shadow-lg mx-auto"
         style={{ maxWidth: '100%', height: 'auto' }}
       />
       
@@ -409,9 +409,9 @@ const JobApplicationSweeper: React.FC = () => {
         Share Score on X
       </button>
       
-      <div className="mt-10 max-w-lg mx-auto">
+      <div className="mt-10 max-w-lg mx-auto flex flex-col items-center">
         <h3 className="text-white font-mono text-2xl mb-6">Leaderboard</h3>
-        <table className="w-full border-2 border-white text-white font-mono text-base">
+        <table className="w-full border-2 border-white text-white font-mono text-base mx-auto">
           <thead>
             <tr className="bg-white text-black">
               <th className="border-2 border-black p-3">Rank</th>
@@ -424,9 +424,9 @@ const JobApplicationSweeper: React.FC = () => {
         </table>
       </div>
       
-      <div className="mt-8 text-white font-mono text-base max-w-2xl mx-auto">
+      <div className="mt-8 text-white font-mono text-base max-w-2xl mx-auto text-center">
         <h4 className="text-lg mb-4">How to play:</h4>
-        <div className="text-left space-y-2">
+        <div className="text-center space-y-2">
           <p>• Left click to reveal cells, right click to flag applications</p>
           <p>• Numbers show how many applications are adjacent to that cell</p>
           <p>• Avoid clicking on the hidden job applications!</p>

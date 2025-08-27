@@ -16,6 +16,7 @@ const JobApplicationSweeper: React.FC = () => {
     mineCount: number;
     currentScore: number;
     applicationImage: HTMLImageElement;
+    flagMode: boolean;
   }>({
     board: [],
     mines: [],
@@ -29,7 +30,8 @@ const JobApplicationSweeper: React.FC = () => {
     cols: 9,
     mineCount: 10,
     currentScore: 0,
-    applicationImage: new Image()
+    applicationImage: new Image(),
+    flagMode: false
   });
 
   useEffect(() => {
@@ -209,7 +211,20 @@ const JobApplicationSweeper: React.FC = () => {
     
     if (r < 0 || r >= gameState.rows || c < 0 || c >= gameState.cols || gameState.flags[r][c]) return;
     
-    revealCell(r, c);
+    if (gameState.flagMode) {
+      // Flag mode - toggle flag
+      if (!gameState.revealed[r][c]) {
+        gameState.flags[r][c] = !gameState.flags[r][c];
+        const flagCount = gameState.flags.flat().filter(f => f).length;
+        updateStatus(`Applications remaining: ${gameState.mineCount - flagCount}`);
+      }
+    } else {
+      // Click mode - reveal cell
+      if (!gameState.flags[r][c]) {
+        revealCell(r, c);
+      }
+    }
+    
     drawBoard();
     checkWin();
   };
@@ -362,9 +377,28 @@ const JobApplicationSweeper: React.FC = () => {
     window.open(url, '_blank');
   };
 
+  const toggleMode = () => {
+    const gameState = gameStateRef.current;
+    gameState.flagMode = !gameState.flagMode;
+    
+    // Update button text
+    const modeButton = document.getElementById('mode-toggle-button');
+    if (modeButton) {
+      modeButton.textContent = gameState.flagMode ? 'Mode: Flag 🚩' : 'Mode: Click 👆';
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center text-center">
       <div className="mb-6">
+        <button 
+          id="mode-toggle-button"
+          onClick={toggleMode}
+          className="bg-blue-600 text-white px-8 py-4 font-mono text-xl hover:bg-blue-700 transition-colors border-2 border-blue-800 rounded"
+        >
+          Mode: Click 👆
+        </button>
+        
         <button 
           onClick={() => startGame('easy')}
           className="bg-white text-black px-6 py-3 font-mono text-lg hover:bg-gray-200 transition-colors border-2 border-black"
@@ -427,7 +461,8 @@ const JobApplicationSweeper: React.FC = () => {
       <div className="mt-8 text-white font-mono text-base max-w-2xl mx-auto text-center">
         <h4 className="text-lg mb-4">How to play:</h4>
         <div className="text-center space-y-2">
-          <p>• Left click to reveal cells, right click to flag applications</p>
+          <p>• Toggle between Click mode (reveal cells) and Flag mode (flag applications)</p>
+          <p>• Right click also flags applications in any mode</p>
           <p>• Numbers show how many applications are adjacent to that cell</p>
           <p>• Avoid clicking on the hidden job applications!</p>
           <p>• Flag all applications and reveal all safe cells to win</p>

@@ -214,15 +214,20 @@ const JobApplicationSweeper: React.FC = () => {
     if (r < 0 || r >= gameState.rows || c < 0 || c >= gameState.cols) return;
     
     if (gameState.flagMode) {
-      // Flag mode - toggle flag
+      // Flag mode - toggle flag (max 10 flags)
       if (!gameState.revealed[r][c]) {
+        const currentFlagCount = gameState.flags.flat().filter(f => f).length;
+        if (!gameState.flags[r][c] && currentFlagCount >= 10) {
+          // Already at max flags, can't add more
+          return;
+        }
         gameState.flags[r][c] = !gameState.flags[r][c];
         const flagCount = gameState.flags.flat().filter(f => f).length;
         updateStatus(`Applications remaining: ${gameState.mineCount - flagCount}`);
       }
     } else {
       // Click mode - reveal cell
-      if (!gameState.flags[r][c]) {
+      if (!gameState.flags[r][c] && !gameState.revealed[r][c]) {
         revealCell(r, c);
       }
     }
@@ -233,6 +238,7 @@ const JobApplicationSweeper: React.FC = () => {
 
   const handleTouch = (event: React.TouchEvent<HTMLCanvasElement>) => {
     event.preventDefault();
+    event.stopPropagation();
     const gameState = gameStateRef.current;
     const canvas = canvasRef.current;
     if (!canvas || gameState.gameOver || gameState.gameWon) return;
@@ -254,15 +260,20 @@ const JobApplicationSweeper: React.FC = () => {
     if (r < 0 || r >= gameState.rows || c < 0 || c >= gameState.cols) return;
     
     if (gameState.flagMode) {
-      // Flag mode - toggle flag
+      // Flag mode - toggle flag (max 10 flags)
       if (!gameState.revealed[r][c]) {
+        const currentFlagCount = gameState.flags.flat().filter(f => f).length;
+        if (!gameState.flags[r][c] && currentFlagCount >= 10) {
+          // Already at max flags, can't add more
+          return;
+        }
         gameState.flags[r][c] = !gameState.flags[r][c];
         const flagCount = gameState.flags.flat().filter(f => f).length;
         updateStatus(`Applications remaining: ${gameState.mineCount - flagCount}`);
       }
     } else {
       // Click mode - reveal cell
-      if (!gameState.flags[r][c]) {
+      if (!gameState.flags[r][c] && !gameState.revealed[r][c]) {
         revealCell(r, c);
       }
     }
@@ -270,6 +281,7 @@ const JobApplicationSweeper: React.FC = () => {
     drawBoard();
     checkWin();
   };
+
   const handleRightClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     event.preventDefault();
     const gameState = gameStateRef.current;
@@ -286,6 +298,12 @@ const JobApplicationSweeper: React.FC = () => {
     
     if (r < 0 || r >= gameState.rows || c < 0 || c >= gameState.cols || gameState.revealed[r][c]) return;
     
+    const currentFlagCount = gameState.flags.flat().filter(f => f).length;
+    if (!gameState.flags[r][c] && currentFlagCount >= 10) {
+      // Already at max flags, can't add more
+      return;
+    }
+    
     gameState.flags[r][c] = !gameState.flags[r][c];
     const flagCount = gameState.flags.flat().filter(f => f).length;
     updateStatus(`Applications remaining: ${gameState.mineCount - flagCount}`);
@@ -300,7 +318,8 @@ const JobApplicationSweeper: React.FC = () => {
     
     if (gameState.mines[r][c]) {
       gameState.gameOver = true;
-      updateStatus('Game Over! You hit an application.');
+      updateStatus('GAME OVER! You hit an application.');
+      showGameOverJumpscare();
       if (gameState.timerInterval) {
         clearInterval(gameState.timerInterval);
       }
@@ -318,6 +337,48 @@ const JobApplicationSweeper: React.FC = () => {
         }
       }
     }
+  };
+
+  const showGameOverJumpscare = () => {
+    // Create jumpscare overlay
+    const jumpscareDiv = document.createElement('div');
+    jumpscareDiv.id = 'game-over-jumpscare';
+    jumpscareDiv.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black transition-opacity duration-300';
+    jumpscareDiv.style.opacity = '0';
+    
+    // Add content
+    jumpscareDiv.innerHTML = `
+      <div class="relative w-full h-full flex items-center justify-center" style="animation: shake 0.5s infinite">
+        <img src="/boo.png" alt="Game Over" class="max-w-full max-h-full object-contain relative z-10" />
+        <div class="absolute inset-0 flex items-center justify-center z-20">
+          <h1 class="text-white text-6xl md:text-8xl font-mono font-bold tracking-widest" style="text-shadow: 4px 4px 0px rgba(0,0,0,0.8), -2px -2px 0px rgba(255,255,255,0.2);">GAME OVER</h1>
+        </div>
+        <div class="absolute inset-0 bg-red-600 opacity-30 animate-pulse z-5"></div>
+        <div class="absolute inset-0 bg-white opacity-95 animate-pulse z-30" style="animation: flash 0.1s infinite"></div>
+      </div>
+    `;
+    
+    document.body.appendChild(jumpscareDiv);
+    
+    // Fade in
+    setTimeout(() => {
+      jumpscareDiv.style.opacity = '1';
+    }, 10);
+    
+    // Play scream sound
+    const audio = new Audio('/job.mp3');
+    audio.volume = 0.3;
+    audio.play().catch(e => console.log('Audio play failed:', e));
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+      jumpscareDiv.style.opacity = '0';
+      setTimeout(() => {
+        if (jumpscareDiv.parentNode) {
+          jumpscareDiv.parentNode.removeChild(jumpscareDiv);
+        }
+      }, 300);
+    }, 3000);
   };
 
   const updateTimer = () => {
@@ -458,6 +519,8 @@ const JobApplicationSweeper: React.FC = () => {
         ref={canvasRef}
         onClick={handleClick}
         onTouchStart={handleTouch}
+        onTouchEnd={(e) => e.preventDefault()}
+        onTouchMove={(e) => e.preventDefault()}
         onContextMenu={handleRightClick}
         className="border-4 border-white bg-gray-300 mb-6 shadow-lg mx-auto touch-none"
         style={{ 
@@ -515,6 +578,7 @@ const JobApplicationSweeper: React.FC = () => {
         <div className="text-center space-y-2">
           <p>• Toggle between Click mode (reveal cells) and Flag mode (flag applications)</p>
           <p>• Right click also flags applications in any mode</p>
+          <p>• You have maximum 10 flags to use</p>
           <p>• Numbers show how many applications are adjacent to that cell</p>
           <p>• Avoid clicking on the hidden job applications!</p>
           <p>• Flag all applications and reveal all safe cells to win</p>

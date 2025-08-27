@@ -1,340 +1,444 @@
 import React, { useEffect, useRef } from 'react';
 
-const EndlessRunner: React.FC = () => {
-  const mountRef = useRef<HTMLDivElement>(null);
-  const gameRef = useRef<{
-    scene?: any;
-    camera?: any;
-    renderer?: any;
-    animationId?: number;
-  }>({});
+const JobApplicationSweeper: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const gameStateRef = useRef<{
+    board: number[][];
+    mines: boolean[][];
+    revealed: boolean[][];
+    flags: boolean[][];
+    gameOver: boolean;
+    gameWon: boolean;
+    startTime: number | null;
+    timerInterval: NodeJS.Timeout | null;
+    rows: number;
+    cols: number;
+    mineCount: number;
+    currentScore: number;
+    applicationImage: HTMLImageElement;
+  }>({
+    board: [],
+    mines: [],
+    revealed: [],
+    flags: [],
+    gameOver: false,
+    gameWon: false,
+    startTime: null,
+    timerInterval: null,
+    rows: 9,
+    cols: 9,
+    mineCount: 10,
+    currentScore: 0,
+    applicationImage: new Image()
+  });
 
   useEffect(() => {
-    if (!mountRef.current) return;
-
-    // Load Three.js dynamically
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-    script.onload = () => {
-      initGame();
-    };
-    document.head.appendChild(script);
+    const gameState = gameStateRef.current;
+    
+    // Load the application image
+    gameState.applicationImage.src = '/image copy copy.png';
+    
+    startGame('easy');
+    updateLeaderboard();
 
     return () => {
-      // Cleanup
-      if (gameRef.current.animationId) {
-        cancelAnimationFrame(gameRef.current.animationId);
+      if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
       }
-      if (gameRef.current.renderer && mountRef.current) {
-        mountRef.current.removeChild(gameRef.current.renderer.domElement);
-      }
-      document.head.removeChild(script);
     };
   }, []);
 
-  const initGame = () => {
-    if (!mountRef.current || !window.THREE) return;
+  const startGame = (level: string) => {
+    const gameState = gameStateRef.current;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    const THREE = window.THREE;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    // Scene setup
-    const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x000000, 10, 50);
-    const camera = new THREE.PerspectiveCamera(75, 800 / 600, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(800, 600);
-    mountRef.current.appendChild(renderer.domElement);
-
-    gameRef.current = { scene, camera, renderer };
-
-    // Dark lighting with flashlight
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.2);
-    scene.add(ambientLight);
-    const flashlight = new THREE.SpotLight(0xffffff, 1, 50, Math.PI / 4, 0.5, 2);
-    flashlight.position.set(0, 5, 0);
-    flashlight.target.position.set(0, 0, -20);
-    scene.add(flashlight);
-    scene.add(flashlight.target);
-
-    // Ground (track)
-    const groundGeometry = new THREE.PlaneGeometry(10, 1000);
-    const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x333333 });
-    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.z = -500;
-    scene.add(ground);
-
-    // Player (simple capsule)
-    const playerBodyGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1.5, 32);
-    const playerBodyMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
-    const player = new THREE.Mesh(playerBodyGeometry, playerBodyMaterial);
-    player.position.set(0, 0.75, 0);
-    scene.add(player);
-
-    // Chaser: Job Application
-    const chaserGeometry = new THREE.PlaneGeometry(3, 4);
-    const chaserMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
-    const chaser = new THREE.Mesh(chaserGeometry, chaserMaterial);
-    chaser.position.set(0, 2, 20);
-    chaser.rotation.y = Math.PI;
-    scene.add(chaser);
-
-    // Game variables
-    const lanes = [-2, 0, 2];
-    let currentLane = 1;
-    player.position.x = lanes[currentLane];
-
-    let isJumping = false;
-    let jumpVelocity = 0;
-    const jumpHeight = 0.3;
-    const gravity = 0.01;
-    let isSliding = false;
-    let slideTimer = 0;
-    const slideDuration = 30;
-
-    let playerSpeed = 0.5;
-    const baseSpeed = 0.5;
-    let chaserSpeed = 0.4;
-    let score = 0;
-    let gameOver = false;
-
-    const obstacles: any[] = [];
-    const coins: any[] = [];
-    const obstacleSpawnInterval = 100;
-    let frameCount = 0;
-
-    // Spawn obstacle function
-    function spawnObstacle() {
-      const type = Math.random() > 0.5 ? 'low' : 'high';
-      const lane = Math.floor(Math.random() * 3);
-      const obsGeometry = new THREE.BoxGeometry(1, type === 'low' ? 1 : 3, 1);
-      const obsMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-      const obs = new THREE.Mesh(obsGeometry, obsMaterial);
-      obs.position.set(lanes[lane], type === 'low' ? 0.5 : 1.5, player.position.z - 50 - Math.random() * 20);
-      obs.userData = { type, lane };
-      scene.add(obs);
-      obstacles.push(obs);
+    // Set difficulty
+    if (level === 'easy') {
+      gameState.rows = 9;
+      gameState.cols = 9;
+      gameState.mineCount = 10;
+    } else if (level === 'medium') {
+      gameState.rows = 16;
+      gameState.cols = 16;
+      gameState.mineCount = 40;
+    } else {
+      gameState.rows = 30;
+      gameState.cols = 16;
+      gameState.mineCount = 99;
     }
 
-    // Spawn coin function
-    function spawnCoin() {
-      const lane = Math.floor(Math.random() * 3);
-      const coinGeometry = new THREE.SphereGeometry(0.3, 32, 32);
-      const coinMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-      const coin = new THREE.Mesh(coinGeometry, coinMaterial);
-      coin.position.set(lanes[lane], 1, player.position.z - 40 - Math.random() * 30);
-      scene.add(coin);
-      coins.push(coin);
+    canvas.width = gameState.cols * 30;
+    canvas.height = gameState.rows * 30;
+
+    // Initialize game state
+    gameState.board = Array(gameState.rows).fill(null).map(() => Array(gameState.cols).fill(0));
+    gameState.mines = Array(gameState.rows).fill(null).map(() => Array(gameState.cols).fill(false));
+    gameState.revealed = Array(gameState.rows).fill(null).map(() => Array(gameState.cols).fill(false));
+    gameState.flags = Array(gameState.rows).fill(null).map(() => Array(gameState.cols).fill(false));
+    gameState.gameOver = false;
+    gameState.gameWon = false;
+    gameState.startTime = null;
+    
+    if (gameState.timerInterval) {
+      clearInterval(gameState.timerInterval);
     }
 
-    // Controls
-    const keys: { [key: string]: boolean } = {};
-    const handleKeyDown = (e: KeyboardEvent) => keys[e.key] = true;
-    const handleKeyUp = (e: KeyboardEvent) => keys[e.key] = false;
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('keyup', handleKeyUp);
+    updateStatus(`Applications remaining: ${gameState.mineCount}`);
+    placeMines();
+    calculateNumbers();
+    drawBoard();
+  };
 
-    // Touch controls
-    let touchStartX = 0;
-    let touchStartY = 0;
-    const swipeThreshold = 50;
-
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartX = e.changedTouches[0].screenX;
-      touchStartY = e.changedTouches[0].screenY;
-    };
-
-    const handleTouchEnd = (e: TouchEvent) => {
-      const touchEndX = e.changedTouches[0].screenX;
-      const touchEndY = e.changedTouches[0].screenY;
-      const deltaX = touchEndX - touchStartX;
-      const deltaY = touchEndY - touchStartY;
-
-      if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        if (deltaX > swipeThreshold && currentLane < 2) {
-          currentLane++;
-          player.position.x = lanes[currentLane];
-        } else if (deltaX < -swipeThreshold && currentLane > 0) {
-          currentLane--;
-          player.position.x = lanes[currentLane];
-        }
-      } else {
-        if (deltaY < -swipeThreshold && !isJumping) {
-          isJumping = true;
-          jumpVelocity = jumpHeight;
-        } else if (deltaY > swipeThreshold && !isSliding && !isJumping) {
-          isSliding = true;
-          slideTimer = slideDuration;
-          player.scale.y = 0.5;
-          player.position.y = 0.375;
-        }
+  const placeMines = () => {
+    const gameState = gameStateRef.current;
+    let placed = 0;
+    while (placed < gameState.mineCount) {
+      const row = Math.floor(Math.random() * gameState.rows);
+      const col = Math.floor(Math.random() * gameState.cols);
+      if (!gameState.mines[row][col]) {
+        gameState.mines[row][col] = true;
+        placed++;
       }
-    };
+    }
+  };
 
-    renderer.domElement.addEventListener('touchstart', handleTouchStart);
-    renderer.domElement.addEventListener('touchend', handleTouchEnd);
-
-    // Animation loop
-    function animate() {
-      if (gameOver) return;
-
-      gameRef.current.animationId = requestAnimationFrame(animate);
-      frameCount++;
-
-      // Auto move forward
-      player.position.z -= playerSpeed;
-      chaser.position.z -= chaserSpeed;
-
-      // Update score
-      score += 0.1;
-      const scoreElement = document.getElementById('runner-score');
-      if (scoreElement) {
-        scoreElement.textContent = `Score: ${Math.floor(score)}`;
-      }
-
-      // Keyboard controls
-      if ((keys['ArrowLeft'] || keys['a']) && currentLane > 0) {
-        currentLane--;
-        player.position.x = lanes[currentLane];
-        keys['ArrowLeft'] = keys['a'] = false;
-      }
-      if ((keys['ArrowRight'] || keys['d']) && currentLane < 2) {
-        currentLane++;
-        player.position.x = lanes[currentLane];
-        keys['ArrowRight'] = keys['d'] = false;
-      }
-      if ((keys['ArrowUp'] || keys['w']) && !isJumping) {
-        isJumping = true;
-        jumpVelocity = jumpHeight;
-        keys['ArrowUp'] = keys['w'] = false;
-      }
-      if ((keys['ArrowDown'] || keys['s']) && !isSliding && !isJumping) {
-        isSliding = true;
-        slideTimer = slideDuration;
-        player.scale.y = 0.5;
-        player.position.y = 0.375;
-        keys['ArrowDown'] = keys['s'] = false;
-      }
-
-      // Jump physics
-      if (isJumping) {
-        player.position.y += jumpVelocity;
-        jumpVelocity -= gravity;
-        if (player.position.y <= 0.75) {
-          player.position.y = 0.75;
-          isJumping = false;
-        }
-      }
-
-      // Slide physics
-      if (isSliding) {
-        slideTimer--;
-        if (slideTimer <= 0) {
-          isSliding = false;
-          player.scale.y = 1;
-          player.position.y = 0.75;
-        }
-      }
-
-      // Spawn obstacles and coins
-      if (frameCount % obstacleSpawnInterval === 0) {
-        spawnObstacle();
-        if (Math.random() > 0.3) spawnCoin();
-      }
-
-      // Update camera and flashlight
-      camera.position.set(player.position.x, player.position.y + 3, player.position.z + 5);
-      camera.lookAt(player.position.x, player.position.y, player.position.z - 10);
-      flashlight.position.copy(camera.position);
-      flashlight.target.position.set(player.position.x, player.position.y, player.position.z - 20);
-
-      // Update chaser
-      chaser.position.x = player.position.x;
-      chaser.lookAt(player.position);
-
-      // Check collisions with obstacles
-      obstacles.forEach((obs, i) => {
-        const distZ = Math.abs(player.position.z - obs.position.z);
-        const sameLane = currentLane === obs.userData.lane;
-        if (distZ < 1 && sameLane) {
-          if (obs.userData.type === 'low' && player.position.y > 1.5) {
-            // Jumped over
-          } else if (obs.userData.type === 'high' && isSliding) {
-            // Slid under
-          } else {
-            // Collision
-            playerSpeed = 0.1;
-            setTimeout(() => { playerSpeed = baseSpeed; }, 1000);
+  const calculateNumbers = () => {
+    const gameState = gameStateRef.current;
+    for (let r = 0; r < gameState.rows; r++) {
+      for (let c = 0; c < gameState.cols; c++) {
+        if (gameState.mines[r][c]) continue;
+        let count = 0;
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            if (dr === 0 && dc === 0) continue;
+            const nr = r + dr;
+            const nc = c + dc;
+            if (nr >= 0 && nr < gameState.rows && nc >= 0 && nc < gameState.cols && gameState.mines[nr][nc]) {
+              count++;
+            }
           }
         }
-        if (obs.position.z > player.position.z + 10) {
-          scene.remove(obs);
-          obstacles.splice(i, 1);
-        }
-      });
+        gameState.board[r][c] = count;
+      }
+    }
+  };
 
-      // Check coin collection
-      coins.forEach((coin, i) => {
-        if (Math.abs(player.position.x - coin.position.x) < 1 && 
-            Math.abs(player.position.z - coin.position.z) < 1 && 
-            Math.abs(player.position.y - coin.position.y) < 1) {
-          scene.remove(coin);
-          coins.splice(i, 1);
-          score += 10;
-        }
-        if (coin.position.z > player.position.z + 10) {
-          scene.remove(coin);
-          coins.splice(i, 1);
-        }
-      });
+  const drawBoard = () => {
+    const canvas = canvasRef.current;
+    const gameState = gameStateRef.current;
+    if (!canvas) return;
 
-      // Check if chaser catches up
-      if (chaser.position.z >= player.position.z - 2) {
-        gameOver = true;
-        const gameOverElement = document.getElementById('runner-game-over');
-        if (gameOverElement) {
-          gameOverElement.style.display = 'block';
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    for (let r = 0; r < gameState.rows; r++) {
+      for (let c = 0; c < gameState.cols; c++) {
+        const x = c * 30;
+        const y = r * 30;
+        
+        // Draw cell border
+        ctx.strokeStyle = '#333';
+        ctx.strokeRect(x, y, 30, 30);
+        
+        if (gameState.revealed[r][c]) {
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(x, y, 30, 30);
+          if (gameState.board[r][c] > 0) {
+            ctx.fillStyle = 'black';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(gameState.board[r][c].toString(), x + 15, y + 15);
+          }
+        } else if (gameState.flags[r][c]) {
+          ctx.fillStyle = 'red';
+          ctx.font = '20px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('🚩', x + 15, y + 15);
+        }
+        
+        if (gameState.gameOver && gameState.mines[r][c]) {
+          if (gameState.applicationImage.complete && gameState.applicationImage.naturalWidth > 0) {
+            ctx.drawImage(gameState.applicationImage, x, y, 30, 30);
+          } else {
+            ctx.fillStyle = 'black';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('📝', x + 15, y + 15);
+          }
         }
       }
+    }
+  };
 
-      renderer.render(scene, camera);
+  const handleClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    const gameState = gameStateRef.current;
+    const canvas = canvasRef.current;
+    if (!canvas || gameState.gameOver || gameState.gameWon) return;
+
+    if (!gameState.startTime) {
+      gameState.startTime = Date.now();
+      gameState.timerInterval = setInterval(updateTimer, 1000);
     }
 
-    animate();
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const r = Math.floor(y / 30);
+    const c = Math.floor(x / 30);
+    
+    if (r < 0 || r >= gameState.rows || c < 0 || c >= gameState.cols || gameState.flags[r][c]) return;
+    
+    revealCell(r, c);
+    drawBoard();
+    checkWin();
+  };
 
-    // Cleanup function
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('keyup', handleKeyUp);
-      renderer.domElement.removeEventListener('touchstart', handleTouchStart);
-      renderer.domElement.removeEventListener('touchend', handleTouchEnd);
-    };
+  const handleRightClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    event.preventDefault();
+    const gameState = gameStateRef.current;
+    const canvas = canvasRef.current;
+    if (!canvas || gameState.gameOver || gameState.gameWon) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const r = Math.floor(y / 30);
+    const c = Math.floor(x / 30);
+    
+    if (r < 0 || r >= gameState.rows || c < 0 || c >= gameState.cols || gameState.revealed[r][c]) return;
+    
+    gameState.flags[r][c] = !gameState.flags[r][c];
+    const flagCount = gameState.flags.flat().filter(f => f).length;
+    updateStatus(`Applications remaining: ${gameState.mineCount - flagCount}`);
+    drawBoard();
+  };
+
+  const revealCell = (r: number, c: number) => {
+    const gameState = gameStateRef.current;
+    if (gameState.revealed[r][c] || gameState.flags[r][c]) return;
+    
+    gameState.revealed[r][c] = true;
+    
+    if (gameState.mines[r][c]) {
+      gameState.gameOver = true;
+      updateStatus('Game Over! You hit an application.');
+      if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+      }
+      return;
+    }
+    
+    if (gameState.board[r][c] === 0) {
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          const nr = r + dr;
+          const nc = c + dc;
+          if (nr >= 0 && nr < gameState.rows && nc >= 0 && nc < gameState.cols) {
+            revealCell(nr, nc);
+          }
+        }
+      }
+    }
+  };
+
+  const updateTimer = () => {
+    const gameState = gameStateRef.current;
+    if (!gameState.startTime) return;
+    
+    const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
+    if (!gameState.gameOver && !gameState.gameWon) {
+      const flagCount = gameState.flags.flat().filter(f => f).length;
+      updateStatus(`Time: ${elapsed}s | Applications remaining: ${gameState.mineCount - flagCount}`);
+    }
+  };
+
+  const checkWin = () => {
+    const gameState = gameStateRef.current;
+    let unrevealedNonMines = 0;
+    
+    for (let r = 0; r < gameState.rows; r++) {
+      for (let c = 0; c < gameState.cols; c++) {
+        if (!gameState.mines[r][c] && !gameState.revealed[r][c]) {
+          unrevealedNonMines++;
+        }
+      }
+    }
+    
+    if (unrevealedNonMines === 0) {
+      gameState.gameWon = true;
+      if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+      }
+      if (gameState.startTime) {
+        gameState.currentScore = Math.floor((Date.now() - gameState.startTime) / 1000);
+        updateStatus(`Congratulations! You won in ${gameState.currentScore} seconds!`);
+        showNameInput();
+      }
+    }
+  };
+
+  const updateStatus = (message: string) => {
+    const statusElement = document.getElementById('sweeper-status');
+    if (statusElement) {
+      statusElement.textContent = message;
+    }
+  };
+
+  const showNameInput = () => {
+    const nameContainer = document.getElementById('sweeper-name-container');
+    const shareButton = document.getElementById('sweeper-share-button');
+    if (nameContainer) nameContainer.style.display = 'block';
+    if (shareButton) shareButton.style.display = 'block';
+  };
+
+  const submitScore = () => {
+    const gameState = gameStateRef.current;
+    const nameInput = document.getElementById('sweeper-player-name') as HTMLInputElement;
+    const levelSelect = document.getElementById('sweeper-level') as HTMLSelectElement;
+    
+    if (!nameInput || !levelSelect) return;
+    
+    const name = nameInput.value.trim() || 'Anonymous';
+    const difficulty = levelSelect.options[levelSelect.selectedIndex].text;
+    const scores = JSON.parse(localStorage.getItem('minesweeperScores') || '[]');
+    
+    scores.push({ name, time: gameState.currentScore, difficulty });
+    scores.sort((a: any, b: any) => a.time - b.time);
+    if (scores.length > 10) scores.length = 10;
+    
+    localStorage.setItem('minesweeperScores', JSON.stringify(scores));
+    updateLeaderboard();
+    
+    const nameContainer = document.getElementById('sweeper-name-container');
+    if (nameContainer) nameContainer.style.display = 'none';
+  };
+
+  const updateLeaderboard = () => {
+    const scores = JSON.parse(localStorage.getItem('minesweeperScores') || '[]');
+    const tbody = document.getElementById('sweeper-leaderboard-body');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    scores.forEach((score: any, index: number) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${score.name}</td>
+        <td>${score.time}</td>
+        <td>${score.difficulty}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  };
+
+  const shareScore = () => {
+    const gameState = gameStateRef.current;
+    const nameInput = document.getElementById('sweeper-player-name') as HTMLInputElement;
+    const levelSelect = document.getElementById('sweeper-level') as HTMLSelectElement;
+    
+    if (!nameInput || !levelSelect) return;
+    
+    const name = nameInput.value.trim() || 'Anonymous';
+    const difficulty = levelSelect.options[levelSelect.selectedIndex].text;
+    const text = encodeURIComponent(`I completed Job Application Sweeper in ${gameState.currentScore} seconds on ${difficulty}! Try it at ${window.location.origin}/`);
+    const url = `https://x.com/intent/tweet?text=${text}`;
+    window.open(url, '_blank');
+  };
+
+  const handleDifficultyChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    startGame(event.target.value);
   };
 
   return (
-    <div className="relative">
-      <div id="runner-score" className="absolute top-2 left-2 text-white font-mono text-lg z-10">
-        Score: 0
+    <div className="text-center">
+      <div className="mb-4">
+        <label htmlFor="sweeper-level" className="text-white font-mono mr-2">Select difficulty:</label>
+        <select 
+          id="sweeper-level" 
+          className="bg-black text-white border border-white p-2 font-mono mr-2"
+          onChange={handleDifficultyChange}
+          defaultValue="easy"
+        >
+          <option value="easy">Easy (9x9, 10 applications)</option>
+          <option value="medium">Medium (16x16, 40 applications)</option>
+          <option value="hard">Hard (30x16, 99 applications)</option>
+        </select>
+        <button 
+          onClick={() => startGame((document.getElementById('sweeper-level') as HTMLSelectElement)?.value || 'easy')}
+          className="bg-white text-black px-4 py-2 font-mono hover:bg-gray-200 transition-colors"
+        >
+          Start Game
+        </button>
       </div>
-      <div 
-        id="runner-game-over" 
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-red-500 font-mono text-2xl z-10 hidden text-center"
+      
+      <canvas 
+        ref={canvasRef}
+        onClick={handleClick}
+        onContextMenu={handleRightClick}
+        className="border-2 border-white bg-gray-300 mb-4"
+        style={{ maxWidth: '100%', height: 'auto' }}
+      />
+      
+      <div id="sweeper-status" className="text-white font-mono text-lg mb-4">
+        Applications remaining: 10
+      </div>
+      
+      <div id="sweeper-name-container" className="hidden mb-4">
+        <input 
+          type="text" 
+          id="sweeper-player-name" 
+          placeholder="Enter your name" 
+          maxLength={20}
+          className="bg-black text-white border border-white p-2 font-mono mr-2"
+        />
+        <button 
+          onClick={submitScore}
+          className="bg-white text-black px-4 py-2 font-mono hover:bg-gray-200 transition-colors"
+        >
+          Save Score
+        </button>
+      </div>
+      
+      <button 
+        id="sweeper-share-button" 
+        onClick={shareScore}
+        className="hidden bg-blue-500 text-white px-4 py-2 font-mono hover:bg-blue-600 transition-colors mb-4"
       >
-        Game Over!<br />This job application is too scary.
+        Share Score on X
+      </button>
+      
+      <div className="mt-8 max-w-md mx-auto">
+        <h3 className="text-white font-mono text-xl mb-4">Leaderboard</h3>
+        <table className="w-full border border-white text-white font-mono text-sm">
+          <thead>
+            <tr className="bg-white text-black">
+              <th className="border border-black p-2">Rank</th>
+              <th className="border border-black p-2">Name</th>
+              <th className="border border-black p-2">Time (s)</th>
+              <th className="border border-black p-2">Difficulty</th>
+            </tr>
+          </thead>
+          <tbody id="sweeper-leaderboard-body"></tbody>
+        </table>
       </div>
-      <div 
-        ref={mountRef} 
-        className="w-full h-96 bg-black border border-white flex items-center justify-center"
-      >
-        <div className="text-white font-mono">Loading game...</div>
-      </div>
+      
       <div className="mt-4 text-white font-mono text-sm">
-        <p className="mb-2">Controls:</p>
-        <p>Desktop: Arrow keys or WASD</p>
-        <p>Mobile: Swipe left/right to move, up to jump, down to slide</p>
+        <p className="mb-2">How to play:</p>
+        <p>Left click to reveal cells, right click to flag applications</p>
+        <p>Numbers show how many applications are adjacent to that cell</p>
+        <p>Avoid clicking on the hidden job applications!</p>
       </div>
     </div>
   );
 };
 
-export default EndlessRunner;
+export default JobApplicationSweeper;

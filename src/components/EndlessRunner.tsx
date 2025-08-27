@@ -56,23 +56,13 @@ const JobApplicationSweeper: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set difficulty
-    if (level === 'easy') {
-      gameState.rows = 9;
-      gameState.cols = 9;
-      gameState.mineCount = 10;
-    } else if (level === 'medium') {
-      gameState.rows = 16;
-      gameState.cols = 16;
-      gameState.mineCount = 40;
-    } else {
-      gameState.rows = 30;
-      gameState.cols = 16;
-      gameState.mineCount = 99;
-    }
+    // Set to easy difficulty only
+    gameState.rows = 9;
+    gameState.cols = 9;
+    gameState.mineCount = 10;
 
-    canvas.width = gameState.cols * 30;
-    canvas.height = gameState.rows * 30;
+    canvas.width = gameState.cols * 60;
+    canvas.height = gameState.rows * 60;
 
     // Initialize game state
     gameState.board = Array(gameState.rows).fill(null).map(() => Array(gameState.cols).fill(0));
@@ -139,40 +129,62 @@ const JobApplicationSweeper: React.FC = () => {
     
     for (let r = 0; r < gameState.rows; r++) {
       for (let c = 0; c < gameState.cols; c++) {
-        const x = c * 30;
-        const y = r * 30;
+        const x = c * 60;
+        const y = r * 60;
         
-        // Draw cell border
-        ctx.strokeStyle = '#333';
-        ctx.strokeRect(x, y, 30, 30);
-        
+        // Draw cell with 3D effect
         if (gameState.revealed[r][c]) {
-          ctx.fillStyle = '#fff';
-          ctx.fillRect(x, y, 30, 30);
+          // Revealed cell - flat white
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x, y, 60, 60);
+          ctx.strokeStyle = '#999999';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x, y, 60, 60);
+          
           if (gameState.board[r][c] > 0) {
-            ctx.fillStyle = 'black';
-            ctx.font = '20px Arial';
+            // Color-coded numbers
+            const colors = ['', '#0000ff', '#008000', '#ff0000', '#800080', '#800000', '#008080', '#000000', '#808080'];
+            ctx.fillStyle = colors[gameState.board[r][c]] || '#000000';
+            ctx.font = 'bold 36px monospace';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText(gameState.board[r][c].toString(), x + 15, y + 15);
+            ctx.fillText(gameState.board[r][c].toString(), x + 30, y + 30);
           }
-        } else if (gameState.flags[r][c]) {
-          ctx.fillStyle = 'red';
-          ctx.font = '20px Arial';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('🚩', x + 15, y + 15);
+        } else {
+          // Unrevealed cell - 3D raised button effect
+          ctx.fillStyle = '#c0c0c0';
+          ctx.fillRect(x, y, 60, 60);
+          
+          // Top and left highlights
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x, y, 60, 3);
+          ctx.fillRect(x, y, 3, 60);
+          
+          // Bottom and right shadows
+          ctx.fillStyle = '#808080';
+          ctx.fillRect(x, y + 57, 60, 3);
+          ctx.fillRect(x + 57, y, 3, 60);
+          
+          // Flag display
+          if (gameState.flags[r][c]) {
+            ctx.fillStyle = '#ff0000';
+            ctx.font = 'bold 42px monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🚩', x + 30, y + 30);
+          }
         }
         
+        // Show applications when game is over
         if (gameState.gameOver && gameState.mines[r][c]) {
           if (gameState.applicationImage.complete && gameState.applicationImage.naturalWidth > 0) {
-            ctx.drawImage(gameState.applicationImage, x, y, 30, 30);
+            ctx.drawImage(gameState.applicationImage, x + 3, y + 3, 54, 54);
           } else {
-            ctx.fillStyle = 'black';
-            ctx.font = '20px Arial';
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 42px monospace';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('📝', x + 15, y + 15);
+            ctx.fillText('📝', x + 30, y + 30);
           }
         }
       }
@@ -192,8 +204,8 @@ const JobApplicationSweeper: React.FC = () => {
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    const r = Math.floor(y / 30);
-    const c = Math.floor(x / 30);
+    const r = Math.floor(y / 60);
+    const c = Math.floor(x / 60);
     
     if (r < 0 || r >= gameState.rows || c < 0 || c >= gameState.cols || gameState.flags[r][c]) return;
     
@@ -211,8 +223,8 @@ const JobApplicationSweeper: React.FC = () => {
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    const r = Math.floor(y / 30);
-    const c = Math.floor(x / 30);
+    const r = Math.floor(y / 60);
+    const c = Math.floor(x / 60);
     
     if (r < 0 || r >= gameState.rows || c < 0 || c >= gameState.cols || gameState.revealed[r][c]) return;
     
@@ -303,15 +315,13 @@ const JobApplicationSweeper: React.FC = () => {
   const submitScore = () => {
     const gameState = gameStateRef.current;
     const nameInput = document.getElementById('sweeper-player-name') as HTMLInputElement;
-    const levelSelect = document.getElementById('sweeper-level') as HTMLSelectElement;
     
-    if (!nameInput || !levelSelect) return;
+    if (!nameInput) return;
     
     const name = nameInput.value.trim() || 'Anonymous';
-    const difficulty = levelSelect.options[levelSelect.selectedIndex].text;
     const scores = JSON.parse(localStorage.getItem('minesweeperScores') || '[]');
     
-    scores.push({ name, time: gameState.currentScore, difficulty });
+    scores.push({ name, time: gameState.currentScore, difficulty: 'Easy' });
     scores.sort((a: any, b: any) => a.time - b.time);
     if (scores.length > 10) scores.length = 10;
     
@@ -331,10 +341,10 @@ const JobApplicationSweeper: React.FC = () => {
     scores.forEach((score: any, index: number) => {
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td>${index + 1}</td>
-        <td>${score.name}</td>
-        <td>${score.time}</td>
-        <td>${score.difficulty}</td>
+        <td class="border-2 border-white p-3">${index + 1}</td>
+        <td class="border-2 border-white p-3">${score.name}</td>
+        <td class="border-2 border-white p-3">${score.time}</td>
+        <td class="border-2 border-white p-3">Easy</td>
       `;
       tbody.appendChild(row);
     });
@@ -343,40 +353,23 @@ const JobApplicationSweeper: React.FC = () => {
   const shareScore = () => {
     const gameState = gameStateRef.current;
     const nameInput = document.getElementById('sweeper-player-name') as HTMLInputElement;
-    const levelSelect = document.getElementById('sweeper-level') as HTMLSelectElement;
     
-    if (!nameInput || !levelSelect) return;
+    if (!nameInput) return;
     
     const name = nameInput.value.trim() || 'Anonymous';
-    const difficulty = levelSelect.options[levelSelect.selectedIndex].text;
-    const text = encodeURIComponent(`I completed Job Application Sweeper in ${gameState.currentScore} seconds on ${difficulty}! Try it at ${window.location.origin}/`);
+    const text = encodeURIComponent(`I completed Job Application Sweeper in ${gameState.currentScore} seconds on Easy! Try it at ${window.location.origin}/`);
     const url = `https://x.com/intent/tweet?text=${text}`;
     window.open(url, '_blank');
   };
 
-  const handleDifficultyChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    startGame(event.target.value);
-  };
-
   return (
     <div className="text-center">
-      <div className="mb-4">
-        <label htmlFor="sweeper-level" className="text-white font-mono mr-2">Select difficulty:</label>
-        <select 
-          id="sweeper-level" 
-          className="bg-black text-white border border-white p-2 font-mono mr-2"
-          onChange={handleDifficultyChange}
-          defaultValue="easy"
-        >
-          <option value="easy">Easy (9x9, 10 applications)</option>
-          <option value="medium">Medium (16x16, 40 applications)</option>
-          <option value="hard">Hard (30x16, 99 applications)</option>
-        </select>
+      <div className="mb-6">
         <button 
-          onClick={() => startGame((document.getElementById('sweeper-level') as HTMLSelectElement)?.value || 'easy')}
-          className="bg-white text-black px-4 py-2 font-mono hover:bg-gray-200 transition-colors"
+          onClick={() => startGame('easy')}
+          className="bg-white text-black px-6 py-3 font-mono text-lg hover:bg-gray-200 transition-colors border-2 border-black"
         >
-          Start Game
+          New Game (Easy - 9x9, 10 applications)
         </button>
       </div>
       
@@ -384,25 +377,25 @@ const JobApplicationSweeper: React.FC = () => {
         ref={canvasRef}
         onClick={handleClick}
         onContextMenu={handleRightClick}
-        className="border-2 border-white bg-gray-300 mb-4"
+        className="border-4 border-white bg-gray-300 mb-6 shadow-lg"
         style={{ maxWidth: '100%', height: 'auto' }}
       />
       
-      <div id="sweeper-status" className="text-white font-mono text-lg mb-4">
+      <div id="sweeper-status" className="text-white font-mono text-xl mb-6">
         Applications remaining: 10
       </div>
       
-      <div id="sweeper-name-container" className="hidden mb-4">
+      <div id="sweeper-name-container" className="hidden mb-6">
         <input 
           type="text" 
           id="sweeper-player-name" 
           placeholder="Enter your name" 
           maxLength={20}
-          className="bg-black text-white border border-white p-2 font-mono mr-2"
+          className="bg-black text-white border-2 border-white p-3 font-mono text-lg mr-3"
         />
         <button 
           onClick={submitScore}
-          className="bg-white text-black px-4 py-2 font-mono hover:bg-gray-200 transition-colors"
+          className="bg-white text-black px-6 py-3 font-mono text-lg hover:bg-gray-200 transition-colors border-2 border-black"
         >
           Save Score
         </button>
@@ -411,31 +404,34 @@ const JobApplicationSweeper: React.FC = () => {
       <button 
         id="sweeper-share-button" 
         onClick={shareScore}
-        className="hidden bg-blue-500 text-white px-4 py-2 font-mono hover:bg-blue-600 transition-colors mb-4"
+        className="hidden bg-blue-500 text-white px-6 py-3 font-mono text-lg hover:bg-blue-600 transition-colors mb-6 border-2 border-blue-700"
       >
         Share Score on X
       </button>
       
-      <div className="mt-8 max-w-md mx-auto">
-        <h3 className="text-white font-mono text-xl mb-4">Leaderboard</h3>
-        <table className="w-full border border-white text-white font-mono text-sm">
+      <div className="mt-10 max-w-lg mx-auto">
+        <h3 className="text-white font-mono text-2xl mb-6">Leaderboard</h3>
+        <table className="w-full border-2 border-white text-white font-mono text-base">
           <thead>
             <tr className="bg-white text-black">
-              <th className="border border-black p-2">Rank</th>
-              <th className="border border-black p-2">Name</th>
-              <th className="border border-black p-2">Time (s)</th>
-              <th className="border border-black p-2">Difficulty</th>
+              <th className="border-2 border-black p-3">Rank</th>
+              <th className="border-2 border-black p-3">Name</th>
+              <th className="border-2 border-black p-3">Time (s)</th>
+              <th className="border-2 border-black p-3">Difficulty</th>
             </tr>
           </thead>
           <tbody id="sweeper-leaderboard-body"></tbody>
         </table>
       </div>
       
-      <div className="mt-4 text-white font-mono text-sm">
-        <p className="mb-2">How to play:</p>
-        <p>Left click to reveal cells, right click to flag applications</p>
-        <p>Numbers show how many applications are adjacent to that cell</p>
-        <p>Avoid clicking on the hidden job applications!</p>
+      <div className="mt-8 text-white font-mono text-base max-w-2xl mx-auto">
+        <h4 className="text-lg mb-4">How to play:</h4>
+        <div className="text-left space-y-2">
+          <p>• Left click to reveal cells, right click to flag applications</p>
+          <p>• Numbers show how many applications are adjacent to that cell</p>
+          <p>• Avoid clicking on the hidden job applications!</p>
+          <p>• Flag all applications and reveal all safe cells to win</p>
+        </div>
       </div>
     </div>
   );

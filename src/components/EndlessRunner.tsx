@@ -204,8 +204,10 @@ const JobApplicationSweeper: React.FC = () => {
     }
 
     const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (event.clientX - rect.left) * scaleX;
+    const y = (event.clientY - rect.top) * scaleY;
     const r = Math.floor(y / 60);
     const c = Math.floor(x / 60);
     
@@ -229,6 +231,45 @@ const JobApplicationSweeper: React.FC = () => {
     checkWin();
   };
 
+  const handleTouch = (event: React.TouchEvent<HTMLCanvasElement>) => {
+    event.preventDefault();
+    const gameState = gameStateRef.current;
+    const canvas = canvasRef.current;
+    if (!canvas || gameState.gameOver || gameState.gameWon) return;
+
+    if (!gameState.startTime) {
+      gameState.startTime = Date.now();
+      gameState.timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    const touch = event.touches[0] || event.changedTouches[0];
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (touch.clientX - rect.left) * scaleX;
+    const y = (touch.clientY - rect.top) * scaleY;
+    const r = Math.floor(y / 60);
+    const c = Math.floor(x / 60);
+    
+    if (r < 0 || r >= gameState.rows || c < 0 || c >= gameState.cols || gameState.flags[r][c]) return;
+    
+    if (gameState.flagMode) {
+      // Flag mode - toggle flag
+      if (!gameState.revealed[r][c]) {
+        gameState.flags[r][c] = !gameState.flags[r][c];
+        const flagCount = gameState.flags.flat().filter(f => f).length;
+        updateStatus(`Applications remaining: ${gameState.mineCount - flagCount}`);
+      }
+    } else {
+      // Click mode - reveal cell
+      if (!gameState.flags[r][c]) {
+        revealCell(r, c);
+      }
+    }
+    
+    drawBoard();
+    checkWin();
+  };
   const handleRightClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     event.preventDefault();
     const gameState = gameStateRef.current;
@@ -236,8 +277,10 @@ const JobApplicationSweeper: React.FC = () => {
     if (!canvas || gameState.gameOver || gameState.gameWon) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (event.clientX - rect.left) * scaleX;
+    const y = (event.clientY - rect.top) * scaleY;
     const r = Math.floor(y / 60);
     const c = Math.floor(x / 60);
     
@@ -410,9 +453,15 @@ const JobApplicationSweeper: React.FC = () => {
       <canvas 
         ref={canvasRef}
         onClick={handleClick}
+        onTouchStart={handleTouch}
         onContextMenu={handleRightClick}
-        className="border-4 border-white bg-gray-300 mb-6 shadow-lg mx-auto"
-        style={{ maxWidth: '100%', height: 'auto' }}
+        className="border-4 border-white bg-gray-300 mb-6 shadow-lg mx-auto touch-none"
+        style={{ 
+          maxWidth: '100%', 
+          height: 'auto',
+          touchAction: 'none',
+          userSelect: 'none'
+        }}
       />
       
       <div id="sweeper-status" className="text-white font-mono text-xl mb-6">

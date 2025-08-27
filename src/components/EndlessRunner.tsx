@@ -211,7 +211,7 @@ const JobApplicationSweeper: React.FC = () => {
     const r = Math.floor(y / 60);
     const c = Math.floor(x / 60);
     
-    if (r < 0 || r >= gameState.rows || c < 0 || c >= gameState.cols || gameState.flags[r][c]) return;
+    if (r < 0 || r >= gameState.rows || c < 0 || c >= gameState.cols) return;
     
     if (gameState.flagMode) {
       // Flag mode - toggle flag
@@ -251,7 +251,7 @@ const JobApplicationSweeper: React.FC = () => {
     const r = Math.floor(y / 60);
     const c = Math.floor(x / 60);
     
-    if (r < 0 || r >= gameState.rows || c < 0 || c >= gameState.cols || gameState.flags[r][c]) return;
+    if (r < 0 || r >= gameState.rows || c < 0 || c >= gameState.cols) return;
     
     if (gameState.flagMode) {
       // Flag mode - toggle flag
@@ -379,7 +379,7 @@ const JobApplicationSweeper: React.FC = () => {
     const name = nameInput.value.trim() || 'Anonymous';
     const scores = JSON.parse(localStorage.getItem('minesweeperScores') || '[]');
     
-    scores.push({ name, time: gameState.currentScore, difficulty: 'Easy' });
+    scores.push({ name, time: gameState.currentScore });
     scores.sort((a: any, b: any) => a.time - b.time);
     if (scores.length > 10) scores.length = 10;
     
@@ -402,7 +402,6 @@ const JobApplicationSweeper: React.FC = () => {
         <td class="border-2 border-white p-3">${index + 1}</td>
         <td class="border-2 border-white p-3">${score.name}</td>
         <td class="border-2 border-white p-3">${score.time}</td>
-        <td class="border-2 border-white p-3">Easy</td>
       `;
       tbody.appendChild(row);
     });
@@ -415,7 +414,12 @@ const JobApplicationSweeper: React.FC = () => {
     if (!nameInput) return;
     
     const name = nameInput.value.trim() || 'Anonymous';
-    const text = encodeURIComponent(`I completed Job Application Sweeper in ${gameState.currentScore} seconds on Easy! Try it at ${window.location.origin}/`);
+    
+    // Get current rank
+    const scores = JSON.parse(localStorage.getItem('minesweeperScores') || '[]');
+    const currentRank = scores.findIndex((score: any) => score.name === name && score.time === gameState.currentScore) + 1;
+    
+    const text = encodeURIComponent(`I spent ${gameState.currentScore} seconds finishing the Job Application Sweeper game and ranked as #${currentRank}.\n\nTry to you beat me here: https://www.jobapplication.meme/`);
     const url = `https://x.com/intent/tweet?text=${text}`;
     window.open(url, '_blank');
   };
@@ -446,7 +450,7 @@ const JobApplicationSweeper: React.FC = () => {
           onClick={() => startGame('easy')}
           className="bg-white text-black px-6 py-3 font-mono text-lg hover:bg-gray-200 transition-colors border-2 border-black"
         >
-          New Game (Easy - 9x9, 10 applications)
+          New Game (9x9, 10 applications)
         </button>
       </div>
       
@@ -500,7 +504,6 @@ const JobApplicationSweeper: React.FC = () => {
               <th className="border-2 border-black p-3">Rank</th>
               <th className="border-2 border-black p-3">Name</th>
               <th className="border-2 border-black p-3">Time (s)</th>
-              <th className="border-2 border-black p-3">Difficulty</th>
             </tr>
           </thead>
           <tbody id="sweeper-leaderboard-body"></tbody>

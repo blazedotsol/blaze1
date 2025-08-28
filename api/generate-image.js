@@ -92,12 +92,12 @@ async function processPanel(userFile, templateFile, prompt, size) {
   const templateStream = fs.createReadStream(templateFile.filepath);
 
   const result = await openai.images.edit({
-    model: "gpt-image-1",
+    model: "dall-e-2",
     prompt: prompt,
     image: baseStream,
     mask: templateStream,
     size: size,
-    response_format: 'b64_json',
+    response_format: 'b64_json'
   });
 
   return result.data[0].b64_json;

@@ -32,6 +32,8 @@ async function generateImage(userImage: File, mode: 'hold' | 'wear'): Promise<st
     console.log("Response Headers:", Object.fromEntries(res.headers.entries()));
     console.log("Raw Response Data:", data);
     console.log("Data Keys:", Object.keys(data || {}));
+    console.log("Actual data keys:", data ? Object.keys(data) : 'data is null/undefined');
+    console.log("Full data object:", data);
     console.log("Has imageBase64:", !!data?.imageBase64);
     console.log("imageBase64 length:", data?.imageBase64?.length || 0);
     console.log("imageBase64 first 100 chars:", data?.imageBase64?.substring(0, 100) || 'N/A');

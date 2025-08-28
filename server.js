@@ -19,6 +19,11 @@ const USE_AI = !!process.env.OPENAI_API_KEY; // flip to false to skip AI blendin
 
 app.get("/api/health", (_req, res) => res.json({ ok: true, hasKey: !!process.env.OPENAI_API_KEY }));
 
+app.get("/api/test", (_req, res) => {
+  console.log("Test endpoint hit!");
+  res.json({ message: "Server is working!", timestamp: new Date().toISOString() });
+});
+
 app.post("/api/generate-image",
   upload.fields([
     { name: 'userImage', maxCount: 1 },            // the figure/person

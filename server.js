@@ -10,118 +10,130 @@ const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: "10mb" }));
 
-// --- Multer: use memory storage so req.files.*.buffer exists ---
-const storage = multer.memoryStorage();
-const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB
+// Configure multer for file uploads
+const upload = multer({ 
+  dest: 'uploads/',
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const USE_AI = !!process.env.OPENAI_API_KEY; // flip to false to skip AI blending
 
 app.get("/api/health", (_req, res) => res.json({ ok: true, hasKey: !!process.env.OPENAI_API_KEY }));
 
-app.get("/api/test", (_req, res) => {
-  console.log("Test endpoint hit!");
-  res.json({ message: "Server is working!", timestamp: new Date().toISOString() });
-});
+app.post("/api/generate-image", upload.fields([
+  { name: 'userImage', maxCount: 1 },
+  { name: 'templateImage', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const { prompt, size = "1024x1024", type } = req.body || {};
+    const userImageFile = req.files?.userImage?.[0];
+    const templateImageFile = req.files?.templateImage?.[0];
+    
+    if (!prompt) return res.status(400).json({ error: "Missing prompt" });
+    if (!userImageFile) return res.status(400).json({ error: "Missing user image" });
+    if (!templateImageFile) return res.status(400).json({ error: "Missing template image" });
 
-app.post("/api/generate-image",
-  upload.fields([
-    { name: 'userImage', maxCount: 1 },            // the figure/person
-    { name: 'templateImage', maxCount: 1 }         // job application template
-  ]),
-  async (req, res) => {
-    try {
-      const {
-        size = "1024x1024",
-        mode = "hold" // "hold" or "wear"
-      } = req.body || {};
+    // Read image buffers directly from multer
+    const userImageBuffer = userImageFile.buffer;
+    const templateImageBuffer = templateImageFile.buffer;
 
-      const userFile = req.files?.userImage?.[0];
-      const templateFile = req.files?.templateImage?.[0];
+    // Get image dimensions
+    const userImage = sharp(userImageBuffer);
+    const { width: userWidth, height: userHeight } = await userImage.metadata();
+    
+    const templateImage = sharp(templateImageBuffer);
+    const { width: templateWidth, height: templateHeight } = await templateImage.metadata();
 
-      if (!userFile) return res.status(400).json({ error: "Missing userImage" });
-      if (!templateFile) return res.status(400).json({ error: "Missing templateImage" });
+    // Calculate template size (make it about 15% of the user image width)
+    const targetTemplateWidth = Math.floor(userWidth * 0.15);
+    const targetTemplateHeight = Math.floor((templateHeight / templateWidth) * targetTemplateWidth);
 
-      console.log("Processing mode:", mode);
-      console.log("User file size:", userFile.size);
-      console.log("Template file size:", templateFile.size);
+    // Position template in bottom-right area (where a character might hold it)
+    const left = Math.floor(userWidth * 0.6);
+    const top = Math.floor(userHeight * 0.4);
 
-      const userBuf = userFile.buffer;
-      const templateBuf = templateFile.buffer;
+    // Resize template to fit
+    const resizedTemplate = await templateImage
+      .resize(targetTemplateWidth, targetTemplateHeight)
+      .png()
+      .toBuffer();
 
-      // Normalize orientation + read metadata
-      const userSharp = sharp(userBuf).rotate();
-      const { width: uW, height: uH } = await userSharp.metadata();
+    // Composite the images
+    let compositeImage;
+    if (type === "edit") {
+      // Place template as if character is holding it
+      compositeImage = await userImage
+        .composite([{
+          input: resizedTemplate,
+          top: top,
+          left: left,
+          blend: 'over'
+        }])
+        .png()
+        .toBuffer();
+    } else if (type === "overlay") {
+      // Create semi-transparent overlay effect
+      const transparentTemplate = await sharp(resizedTemplate)
+        .composite([{
+          input: Buffer.from(`<svg width="${targetTemplateWidth}" height="${targetTemplateHeight}">
+            <rect width="100%" height="100%" fill="white" opacity="0.3"/>
+          </svg>`),
+          blend: 'multiply'
+        }])
+        .png()
+        .toBuffer();
 
-      console.log("User image dimensions:", uW, "x", uH);
-
-      let output;
-
-      if (mode === "hold") {
-        // Simple composite for holding job application
-        const holdW = Math.floor(uW * 0.22);
-        const appMeta = await sharp(templateBuf).metadata();
-        const holdH = Math.floor((appMeta.height / appMeta.width) * holdW);
-        const holdLeft = Math.floor(uW * 0.60);
-        const holdTop  = Math.floor(uH * 0.45);
-
-        console.log("Hold placement:", holdLeft, holdTop, holdW, holdH);
-
-        const appResized = await sharp(templateBuf).resize(holdW, holdH).png().toBuffer();
-
-        output = await userSharp
-          .composite([{ input: appResized, left: holdLeft, top: holdTop, blend: 'over' }])
-          .png()
-          .toBuffer();
-
-        console.log("Hold composite created, size:", output.length);
-      } else if (mode === "wear") {
-        // Simple composite for wearing mask
-        const maskW = Math.floor(uW * 0.30);
-        const mMeta = await sharp(templateBuf).metadata();
-        const maskH = Math.floor((mMeta.height / mMeta.width) * maskW);
-
-        const faceLeft = Math.floor(uW * 0.35);
-        const faceTop  = Math.floor(uH * 0.20);
-
-        console.log("Wear placement:", faceLeft, faceTop, maskW, maskH);
-
-        const resizedMask = await sharp(templateBuf).resize(maskW, maskH).png().toBuffer();
-
-        output = await sharp(userBuf).rotate()
-          .composite([{
-            input: resizedMask,
-            left: faceLeft,
-            top: faceTop,
-            blend: 'over',
-            opacity: 0.92
-          }])
-          .png()
-          .toBuffer();
-
-        console.log("Wear composite created, size:", output.length);
-      }
-
-      const base64Result = output.toString('base64');
-      console.log("=== SERVER RESPONSE DEBUG ===");
-      console.log("Generated base64 length:", base64Result.length);
-      console.log("Base64 first 100 chars:", base64Result.substring(0, 100));
-      console.log("About to send response with keys:", Object.keys({ imageBase64: base64Result }));
-      console.log("=== END SERVER DEBUG ===");
-      
-      if (!base64Result || base64Result.length === 0) {
-        throw new Error("Generated image is empty");
-      }
-      
-      const responseData = { imageBase64: base64Result };
-      console.log("Final response object keys:", Object.keys(responseData));
-      return res.json(responseData);
-    } catch (e) {
-      console.error("Image processing error:", e);
-      const status = e?.status || e?.response?.status || 500;
-      return res.status(status).json({ error: e?.message || "Image processing failed" });
+      compositeImage = await userImage
+        .composite([{
+          input: transparentTemplate,
+          top: Math.floor(userHeight * 0.2),
+          left: Math.floor(userWidth * 0.2),
+          blend: 'overlay'
+        }])
+        .png()
+        .toBuffer();
+    } else {
+      // Default: just place template
+      compositeImage = await userImage
+        .composite([{
+          input: resizedTemplate,
+          top: top,
+          left: left,
+          blend: 'over'
+        }])
+        .png()
+        .toBuffer();
     }
+
+    // Optional: Use OpenAI for subtle blending/shadows (only if needed)
+    let finalImage = compositeImage;
+    if (process.env.OPENAI_API_KEY && type === "edit") {
+      try {
+        const blendResult = await openai.images.edit({
+          model: "dall-e-2",
+          image: compositeImage,
+          prompt: "Blend edges subtly, add natural shadows and lighting. Don't change the content, just improve the integration.",
+          size,
+          response_format: "b64_json",
+        });
+        finalImage = Buffer.from(blendResult.data[0].b64_json, "base64");
+      } catch (aiError) {
+        console.log("AI blending failed, using composite only:", aiError.message);
+        // Continue with composite-only result
+      }
+    }
+
+    // Convert final result to base64
+    const base64Result = finalImage.toString('base64');
+    return res.json({ imageBase64: base64Result });
+  } catch (e) {
+    console.error("Image processing error:", e);
+    const status = e?.status || e?.response?.status || 500;
+    const message = e?.message || "Image processing failed";
+    return res.status(status).json({
+      error: message
+    });
   }
-);
+});
 
 app.listen(3001, () => console.log("API on :3001"));

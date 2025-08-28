@@ -4,53 +4,31 @@ import { fileToDataUrl } from "./utils";
 import JobApplicationSweeper from "./components/EndlessRunner";
 
 // Generate image with job application using proper image composition
-async function generateImage(userImage: File, mode: 'hold' | 'wear'): Promise<string> {
+async function generateJobApplicationImage(userImage: File): Promise<string> {
   try {
-    console.log("Starting image generation with mode:", mode);
-    
     const form = new FormData();
     form.append("userImage", userImage, "user.png");
-    form.append("mode", mode);
     
-    // Fetch the correct template based on mode
-    if (mode === 'hold') {
-      const appBlob = await (await fetch("/image copy.png")).blob();
-      form.append("templateImage", appBlob, "application.png");
-    } else if (mode === 'wear') {
-      const maskBlob = await (await fetch("/mask.png")).blob();
-      form.append("templateImage", maskBlob, "mask.png");
-    }
+    // Fetch template image and add to form
+    const tplBlob = await (await fetch("/image copy copy.png")).blob();
+    form.append("templateImage", tplBlob, "template.png");
 
-    console.log("Making request to /api/generate-image");
     const res = await fetch("/api/generate-image", {
       method: "POST",
       body: form,
     });
 
-    console.log("Response received, status:", res.status);
     const data = await res.json();
-    console.log("Response data:", data);
-
 
     if (!res.ok) {
       const msg = data?.error || `HTTP ${res.status}`;
       throw new Error(msg);
     }
 
-    const imageBase64 = data?.imageBase64;
-    if (!imageBase64) {
-      console.error("No imageBase64 in response. Full response:", data);
-      throw new Error("Empty response from API - no imageBase64 field received");
-    }
-    
-    if (imageBase64.length === 0) {
-      throw new Error("Empty image data received from API");
-    }
-    
-    console.log("Successfully got image data, length:", imageBase64.length);
-    return `data:image/png;base64,${imageBase64}`;
+    const dataUrl = data?.dataUrl;
+    if (!dataUrl) throw new Error("Empty response from API");
+    return dataUrl;
   } catch (error: any) {
-    console.error("Generate image error:", error);
     if (error.message?.includes('fetch')) {
       throw new Error("Image generation service is temporarily unavailable. Please try again later.");
     }
@@ -72,13 +50,6 @@ function App() {
   const [uploadedImage1, setUploadedImage1] = useState<File | null>(null);
   const [generatedMeme1, setGeneratedMeme1] = useState<string | null>(null);
   const [error1, setError1] = useState<string | null>(null);
-
-  // Block 2 states
-  const [isGenerating2, setIsGenerating2] = useState(false);
-  const [uploadedImage2, setUploadedImage2] = useState<File | null>(null);
-  const [generatedMeme2, setGeneratedMeme2] = useState<string | null>(null);
-  const [error2, setError2] = useState<string | null>(null);
-
   const [isThrowingAnimation, setIsThrowingAnimation] = useState(false);
 
   // Rate limiting helper functions
@@ -144,15 +115,7 @@ function App() {
     }
   };
 
-  const handleImageUpload2 = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setUploadedImage2(file);
-      setError2(null);
-    }
-  };
-
-  const generateHoldApplication = async () => {
+  const generateJobApplication = async () => {
     if (!uploadedImage1) {
       setError1("Please upload an image first");
       return;
@@ -173,44 +136,13 @@ function App() {
       // Increment rate limit counter before making request
       incrementRateLimit();
       
-      const dataUrl = await generateImage(uploadedImage1, 'hold');
+      const dataUrl = await generateJobApplicationImage(uploadedImage1);
       setGeneratedMeme1(dataUrl);
     } catch (err: any) {
       console.error("Error generating image:", err);
       setError1(err?.message || "Failed to generate image");
     } finally {
       setIsGenerating1(false);
-    }
-  };
-
-  const generateWearMask = async () => {
-    if (!uploadedImage2) {
-      setError2("Please upload an image first");
-      return;
-    }
-
-    // Check rate limit
-    const rateCheck = checkRateLimit();
-    if (!rateCheck.allowed) {
-      const resetIn = Math.ceil((rateCheck.resetTime - Date.now()) / 1000);
-      setError2(`Rate limit exceeded. Try again in ${resetIn} seconds. (Max ${MAX_GENERATIONS_PER_MINUTE} per minute)`);
-      return;
-    }
-    setIsGenerating2(true);
-    setError2(null);
-    setGeneratedMeme2(null);
-
-    try {
-      // Increment rate limit counter before making request
-      incrementRateLimit();
-      
-      const dataUrl = await generateImage(uploadedImage2, 'wear');
-      setGeneratedMeme2(dataUrl);
-    } catch (err: any) {
-      console.error("Error generating image:", err);
-      setError2(err?.message || "Failed to generate image");
-    } finally {
-      setIsGenerating2(false);
     }
   };
 
@@ -225,7 +157,7 @@ function App() {
     
     // Download the template
     const link = document.createElement('a');
-    link.href = '/image copy.png';
+    link.href = '/image copy copy.png';
     link.download = 'job-application-template.png';
     link.click();
   };
@@ -505,11 +437,11 @@ function App() {
           </h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Block 1: Hold Job Application */}
+            {/* Block 1: Get your Job Application */}
             <div className="border border-white p-6 bg-white">
               <div className="flex items-center gap-3 mb-4">
                 <span className="text-black font-mono text-lg">{">"}</span>
-                <h3 className="text-black font-mono text-lg uppercase tracking-wider">hold $job</h3>
+                <h3 className="text-black font-mono text-lg uppercase tracking-wider">get your job application</h3>
               </div>
               
               <p className="text-gray-700 mb-6 text-sm font-mono">upload an image and make the figure hold a job application!</p>
@@ -532,7 +464,7 @@ function App() {
                 </div>
                 
                 <button
-                  onClick={generateHoldApplication}
+                  onClick={generateJobApplication}
                   disabled={isGenerating1 || !uploadedImage1}
                   className="w-full border border-black text-black px-6 py-3 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -565,14 +497,14 @@ function App() {
               </div>
             </div>
 
-            {/* Block 2: Wear Job Mask */}
+            {/* Block 2: Get Jobbed */}
             <div className="border border-white p-6 bg-white">
               <div className="flex items-center gap-3 mb-4">
                 <span className="text-black font-mono text-lg">{">"}</span>
                 <h3 className="text-black font-mono text-lg uppercase tracking-wider">get jobbed</h3>
               </div>
               
-              <p className="text-gray-700 mb-6 text-sm font-mono">upload an image and give your figure a job application face mask!</p>
+              <p className="text-gray-700 mb-6 text-sm font-mono">upload an image and give your figure a job application mask!</p>
               
               <div className="space-y-4">
                 <div>
@@ -580,51 +512,18 @@ function App() {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={handleImageUpload2}
                     className="w-full bg-gray-100 border border-black text-black p-3 focus:border-gray-500 focus:outline-none file:bg-black file:text-white file:border-none file:px-4 file:py-2 file:mr-4 font-mono text-sm"
                   />
-                  {uploadedImage2 && (
-                    <p className="text-black text-sm mt-2 font-mono">✓ {uploadedImage2.name}</p>
-                  )}
-                  {error2 && (
-                    <p className="text-red-600 text-sm mt-2 font-mono">error: {error2}</p>
-                  )}
                 </div>
                 
                 <button
-                  onClick={generateWearMask}
-                  disabled={isGenerating2 || !uploadedImage2}
-                  className="w-full border border-black text-black px-6 py-3 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full border border-black text-black px-6 py-3 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2"
                 >
-                  {isGenerating2 ? (
-                    <>
-                      <RefreshCw className="w-5 h-5 animate-spin" />
-                      generating...
-                    </>
-                  ) : (
-                    <>
-                      <ImageIcon className="w-5 h-5" />
-                      generate
-                    </>
-                  )}
+                  <ImageIcon className="w-5 h-5" />
+                  generate
                 </button>
-                
-                {generatedMeme2 && (
-                  <div className="mt-4">
-                    <img src={generatedMeme2} alt="Generated Job Mask Meme" className="w-full border border-black" />
-                    <a
-                      href={generatedMeme2}
-                      download="job-mask-meme.png"
-                      className="mt-2 w-full border border-black text-black px-4 py-2 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2"
-                    >
-                      <Download className="w-4 h-4" />
-                      download
-                    </a>
-                  </div>
-                )}
               </div>
             </div>
-
             {/* Block 3: Download Template */}
             <div className="border border-black p-6 bg-white relative overflow-visible">
               

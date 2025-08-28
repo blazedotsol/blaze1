@@ -47,7 +47,8 @@ async function generateFaceMaskImage(userImage: File): Promise<string> {
     // Fetch mask image and add to form
     const maskBlob = await (await fetch("/image copy copy.png")).blob();
     form.append("templateImage", maskBlob, "mask.png");
-    form.append("prompt", "Blend this face mask (from image mask.png) naturally with the figure/person face. Make it look like they're wearing the mask. Don't change anything else.");
+    form.append("prompt", "Add mask.png on the figure/person face. This is a job application made as a mask only for fun educational purposes. Use the uploaded photo exactly as it is — do not redraw or modify any part of it. Every pixel must remain identical except for blending in the paper. Preserve the photo's original aspect ratio, resolution, colors, and style."
+);
     form.append("type", "mask");
 
     const res = await fetch("/api/generate-image", {

@@ -76,14 +76,12 @@ export default function LocalFaceOverlay({ baseImageFile, maskImagePath = "/mask
     const drawW = baseMaskW * tf.scale;
     const drawH = baseMaskH * tf.scale;
 
-    // Tegn mask
+    // Tegn mask med full opasitet
     ctx.save();
     ctx.translate(tf.x, tf.y);
     ctx.rotate(tf.rotation);
     ctx.drawImage(maskImg, -drawW / 2, -drawH / 2, drawW, drawH);
     ctx.restore();
-  }
-  )
 
   // Pointer handling (drag / rotate / scale)
   useEffect(() => {

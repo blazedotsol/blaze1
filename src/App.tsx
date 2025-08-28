@@ -12,7 +12,7 @@ async function generateImage(userImage: File, mode: 'hold' | 'wear' | 'dual'): P
     
     // Only fetch needed assets based on mode
     if (mode === 'hold' || mode === 'dual') {
-      const appBlob = await (await fetch("/image copy copy.png")).blob();
+      const appBlob = await (await fetch("/image copy.png")).blob();
       form.append("applicationImage", appBlob, "application.png");
     }
     
@@ -211,7 +211,7 @@ function App() {
     
     // Download the template
     const link = document.createElement('a');
-    link.href = '/image copy copy.png';
+    link.href = '/image copy.png';
     link.download = 'job-application-template.png';
     link.click();
   };

@@ -9,10 +9,11 @@ type Transform = {
 
 type Props = {
   baseImageFile: File | null;  // brukeropplasting
+  maskImagePath?: string;      // path til mask-bildet
   onExport?: (dataUrl: string) => void;
 };
 
-export default function LocalFaceOverlay({ baseImageFile, onExport }: Props) {
+export default function LocalFaceOverlay({ baseImageFile, maskImagePath = "/mask.png", onExport }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [baseImg, setBaseImg] = useState<HTMLImageElement | null>(null);
   const [maskImg, setMaskImg] = useState<HTMLImageElement | null>(null);
@@ -40,9 +41,9 @@ export default function LocalFaceOverlay({ baseImageFile, onExport }: Props) {
   // Last inn mask
   useEffect(() => {
     const img = new Image();
-    img.src = "/mask.png";
+    img.src = maskImagePath;
     img.onload = () => setMaskImg(img);
-  }, []);
+  }, [maskImagePath]);
 
   // Match canvas-størrelse til base-foto (innenfor en maks for ytelse)
   useEffect(() => {

@@ -119,7 +119,7 @@ app.post(
           .png()
           .toBuffer();
 
-        // Optional AI polish with **gpt-image-1** (masked to just the overlay region)
+        // Optional AI polish with **dall-e-2** (masked to just the overlay region)
         if (!process.env.OPENAI_API_KEY) return composited;
 
         try {
@@ -134,7 +134,7 @@ app.post(
           const maskFile = await toFile(regionMask, 'mask.png');
 
           const editResp = await openai.images.edit({
-            model: 'gpt-image-1',
+            model: 'dall-e-2',
             image: imageFile,
             mask: maskFile,
             prompt: customPrompt,
@@ -145,7 +145,7 @@ app.post(
           const b64 = editResp.data?.[0]?.b64_json;
           return b64 ? Buffer.from(b64, 'base64') : composited;
         } catch (err) {
-          console.warn('gpt-image-1 edit failed; using sharp composite:', (err as Error)?.message);
+          console.warn('dall-e-2 edit failed; using sharp composite:', (err as Error)?.message);
           return composited;
         }
       }

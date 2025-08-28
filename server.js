@@ -121,18 +121,54 @@ app.post("/api/generate-image", upload.fields([
     let finalImage = compositeImage;
     if (process.env.OPENAI_API_KEY && (type === "edit" || type === "overlay")) {
       try {
-        const aiPrompt = type === "overlay" 
-          ? "Blend this face mask naturally with the person's face. Make it look like they're wearing the mask. Don't change anything else."
-          : "Blend edges subtly, add natural shadows and lighting. Don't change the content, just improve the integration.";
+        if (type === "overlay") {
+          // Create a mask for the overlay region using gpt-image-1
+          const resizedTemplateMetadata = await sharp(resizedTemplate).metadata();
           
-        const blendResult = await openai.images.edit({
-          model: "dall-e-2",
-          image: compositeImage,
-          prompt: aiPrompt,
-          size,
-          response_format: "b64_json",
-        });
-        finalImage = Buffer.from(blendResult.data[0].b64_json, "base64");
+          // Build a mask that is transparent over the template region and opaque elsewhere
+          const mask = await sharp({
+            create: {
+              width: userWidth, 
+              height: userHeight, 
+              channels: 4, 
+              background: { r: 0, g: 0, b: 0, alpha: 1 }
+            }
+          })
+          .composite([{
+            input: await sharp({
+              create: {
+                width: Math.ceil(resizedTemplateMetadata.width),
+                height: Math.ceil(resizedTemplateMetadata.height),
+                channels: 4, 
+                background: { r: 0, g: 0, b: 0, alpha: 0 }
+              }
+            }).png().toBuffer(),
+            top: compositeTop, 
+            left: compositeLeft
+          }])
+          .png().toBuffer();
+
+          // Use gpt-image-1 with mask for precise overlay blending
+          const blendResult = await openai.images.edit({
+            model: 'gpt-image-1',
+            image: compositeImage,
+            mask: mask,
+            prompt: "Blend the overlay naturally to look like a face mask. Match skin lighting and add realistic contact shadows. Keep everything else exactly the same.",
+            size: size || '1024x1024',
+            response_format: 'b64_json',
+          });
+          finalImage = Buffer.from(blendResult.data[0].b64_json, 'base64');
+        } else {
+          // For job application (non-overlay), use the old method
+          const blendResult = await openai.images.edit({
+            model: "dall-e-2",
+            image: compositeImage,
+            prompt: "Blend edges subtly, add natural shadows and lighting. Don't change the content, just improve the integration.",
+            size,
+            response_format: "b64_json",
+          });
+          finalImage = Buffer.from(blendResult.data[0].b64_json, "base64");
+        }
       } catch (aiError) {
         console.log("AI blending failed, using composite only:", aiError.message);
         // Continue with composite-only result

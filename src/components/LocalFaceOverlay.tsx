@@ -82,6 +82,8 @@ export default function LocalFaceOverlay({ baseImageFile, maskImagePath = "/mask
     ctx.rotate(tf.rotation);
     ctx.drawImage(maskImg, -drawW / 2, -drawH / 2, drawW, drawH);
     ctx.restore();
+  }
+  )
 
   // Pointer handling (drag / rotate / scale)
   useEffect(() => {
@@ -175,16 +177,17 @@ export default function LocalFaceOverlay({ baseImageFile, maskImagePath = "/mask
       </div>
 
       <div className="flex gap-4 items-center">
-        <label className="font-mono text-xs uppercase">opacity</label>
-        <input type="range" min={0.2} max={1} step={0.01} value={opacity}
-               onChange={(e)=>setOpacity(parseFloat(e.target.value))}/>
-        <span className="text-xs font-mono">{Math.round(opacity*100)}%</span>
+        <label className="font-mono text-xs uppercase">rotation</label>
+        <input type="range" min={-180} max={180} step={1} value={Math.round(tf.rotation * 180 / Math.PI)}
+               onChange={(e)=>setTf(t => ({ ...t, rotation: parseFloat(e.target.value) * Math.PI / 180 }))}/>
+        <span className="text-xs font-mono">{Math.round(tf.rotation * 180 / Math.PI)}°</span>
       </div>
 
       <div className="flex gap-4 items-center">
-        <label className="font-mono text-xs uppercase">contact shadow</label>
-        <input type="range" min={0} max={0.5} step={0.01} value={shadow}
-               onChange={(e)=>setShadow(parseFloat(e.target.value))}/>
+        <label className="font-mono text-xs uppercase">scale</label>
+        <input type="range" min={0.1} max={3} step={0.1} value={tf.scale}
+               onChange={(e)=>setTf(t => ({ ...t, scale: parseFloat(e.target.value) }))}/>
+        <span className="text-xs font-mono">{Math.round(tf.scale * 100)}%</span>
       </div>
 
       <div className="border border-black bg-white inline-block">

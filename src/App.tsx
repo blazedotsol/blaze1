@@ -15,7 +15,7 @@ async function generateJobApplicationImage(userImage: File): Promise<string> {
     form.append("prompt", "Composite the provided job application onto the uploaded photo so it looks naturally held by the figure. Use the uploaded photo exactly as it is — do not redraw or modify any part of it. Every pixel must remain identical except for blending in the paper. Preserve the photo's original aspect ratio, resolution, colors, and style.");
     form.append("type", "hold");
 
-    const res = await fetch("/api/generate-image", {
+    const res = await fetch("/api/generate-image", {  // ← HERE: First API call
       method: "POST",
       body: form,
     });
@@ -50,7 +50,7 @@ async function generateFaceMaskImage(userImage: File): Promise<string> {
     form.append("prompt", "Blend this face mask (from image mask.png) naturally with the figure/person face. Make it look like they're wearing the mask. Don't change anything else.");
     form.append("type", "mask");
 
-    const res = await fetch("/api/generate-image", {
+    const res = await fetch("/api/generate-image", {  // ← HERE: Second API call
       method: "POST",
       body: form,
     });

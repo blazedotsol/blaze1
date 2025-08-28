@@ -98,13 +98,19 @@ app.post("/api/generate-image",
       }
 
       const base64Result = output.toString('base64');
-      console.log("Sending response with base64 length:", base64Result.length);
+      console.log("=== SERVER RESPONSE DEBUG ===");
+      console.log("Generated base64 length:", base64Result.length);
+      console.log("Base64 first 100 chars:", base64Result.substring(0, 100));
+      console.log("About to send response with keys:", Object.keys({ imageBase64: base64Result }));
+      console.log("=== END SERVER DEBUG ===");
       
       if (!base64Result || base64Result.length === 0) {
         throw new Error("Generated image is empty");
       }
       
-      return res.json({ imageBase64: base64Result });
+      const responseData = { imageBase64: base64Result };
+      console.log("Final response object keys:", Object.keys(responseData));
+      return res.json(responseData);
     } catch (e) {
       console.error("Image processing error:", e);
       const status = e?.status || e?.response?.status || 500;

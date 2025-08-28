@@ -26,13 +26,16 @@ async function generateImage(userImage: File, mode: 'hold' | 'wear'): Promise<st
 
     const data = await res.json();
 
-    console.log("API Response received:", {
-      ok: res.ok,
-      status: res.status,
-      dataKeys: Object.keys(data),
-      hasImageBase64: !!data?.imageBase64,
-      imageBase64Length: data?.imageBase64?.length || 0
-    });
+    console.log("=== FULL API RESPONSE DEBUG ===");
+    console.log("Response OK:", res.ok);
+    console.log("Response Status:", res.status);
+    console.log("Response Headers:", Object.fromEntries(res.headers.entries()));
+    console.log("Raw Response Data:", data);
+    console.log("Data Keys:", Object.keys(data || {}));
+    console.log("Has imageBase64:", !!data?.imageBase64);
+    console.log("imageBase64 length:", data?.imageBase64?.length || 0);
+    console.log("imageBase64 first 100 chars:", data?.imageBase64?.substring(0, 100) || 'N/A');
+    console.log("=== END DEBUG ===");
 
     if (!res.ok) {
       const msg = data?.error || `HTTP ${res.status}`;

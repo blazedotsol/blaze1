@@ -6,6 +6,8 @@ import JobApplicationSweeper from "./components/EndlessRunner";
 // Generate image with job application using proper image composition
 async function generateImage(userImage: File, mode: 'hold' | 'wear'): Promise<string> {
   try {
+    console.log("Starting image generation with mode:", mode);
+    
     const form = new FormData();
     form.append("userImage", userImage, "user.png");
     form.append("mode", mode);
@@ -19,25 +21,16 @@ async function generateImage(userImage: File, mode: 'hold' | 'wear'): Promise<st
       form.append("templateImage", maskBlob, "mask.png");
     }
 
+    console.log("Making request to /api/generate-image");
     const res = await fetch("/api/generate-image", {
       method: "POST",
       body: form,
     });
 
+    console.log("Response received, status:", res.status);
     const data = await res.json();
+    console.log("Response data:", data);
 
-    console.log("=== FULL API RESPONSE DEBUG ===");
-    console.log("Response OK:", res.ok);
-    console.log("Response Status:", res.status);
-    console.log("Response Headers:", Object.fromEntries(res.headers.entries()));
-    console.log("Raw Response Data:", data);
-    console.log("Data Keys:", Object.keys(data || {}));
-    console.log("Actual data keys:", data ? Object.keys(data) : 'data is null/undefined');
-    console.log("Full data object:", data);
-    console.log("Has imageBase64:", !!data?.imageBase64);
-    console.log("imageBase64 length:", data?.imageBase64?.length || 0);
-    console.log("imageBase64 first 100 chars:", data?.imageBase64?.substring(0, 100) || 'N/A');
-    console.log("=== END DEBUG ===");
 
     if (!res.ok) {
       const msg = data?.error || `HTTP ${res.status}`;
@@ -46,7 +39,7 @@ async function generateImage(userImage: File, mode: 'hold' | 'wear'): Promise<st
 
     const imageBase64 = data?.imageBase64;
     if (!imageBase64) {
-      console.error("API response:", data);
+      console.error("No imageBase64 in response. Full response:", data);
       throw new Error("Empty response from API - no imageBase64 field received");
     }
     
@@ -54,6 +47,7 @@ async function generateImage(userImage: File, mode: 'hold' | 'wear'): Promise<st
       throw new Error("Empty image data received from API");
     }
     
+    console.log("Successfully got image data, length:", imageBase64.length);
     return `data:image/png;base64,${imageBase64}`;
   } catch (error: any) {
     console.error("Generate image error:", error);

@@ -589,7 +589,7 @@ function App() {
               </div>
               
               <p className="text-gray-700 mb-6 text-sm font-mono">
-                upload an image and place the paper overlay manually (no AI).
+                upload an image and give the figure a job application mask
               </p>
               
               <div className="space-y-4">

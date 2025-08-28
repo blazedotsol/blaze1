@@ -25,7 +25,7 @@ app.post("/api/generate-image", upload.fields([
   { name: 'templateImage', maxCount: 1 }
 ]), async (req, res) => {
   try {
-    const { prompt, size = "1024x1024", type } = req.body || {};
+    const { prompt, size = "1024x1024", type = "hold" } = req.body || {};
     const userImageFile = req.files?.userImage?.[0];
     const templateImageFile = req.files?.templateImage?.[0];
     
@@ -44,23 +44,45 @@ app.post("/api/generate-image", upload.fields([
     const templateImage = sharp(templateImageBuffer);
     const { width: templateWidth, height: templateHeight } = await templateImage.metadata();
 
-    // Calculate template size (make it about 15% of the user image width)
-    const targetTemplateWidth = Math.floor(userWidth * 0.15);
-    const targetTemplateHeight = Math.floor((templateHeight / templateWidth) * targetTemplateWidth);
-
-    // Position template in bottom-right area (where a character might hold it)
-    const left = Math.floor(userWidth * 0.6);
-    const top = Math.floor(userHeight * 0.4);
-
-    // Resize template to fit
-    const resizedTemplate = await templateImage
-      .resize(targetTemplateWidth, targetTemplateHeight)
-      .png()
-      .toBuffer();
-
     // Composite the images
     let compositeImage;
-    if (type === "edit") {
+    
+    if (type === "mask") {
+      // For face mask - resize to cover face area and position on face
+      const targetTemplateWidth = Math.floor(userWidth * 0.3);
+      const targetTemplateHeight = Math.floor((templateHeight / templateWidth) * targetTemplateWidth);
+      const left = Math.floor(userWidth * 0.35);
+      const top = Math.floor(userHeight * 0.25);
+
+      const resizedTemplate = await templateImage
+        .resize(targetTemplateWidth, targetTemplateHeight)
+        .png()
+        .toBuffer();
+
+      compositeImage = await userImage
+        .composite([{
+          input: resizedTemplate,
+          top: top,
+          left: left,
+          blend: 'over'
+        }])
+        .png()
+        .toBuffer();
+    } else if (type === "hold") {
+      // Calculate template size (make it about 15% of the user image width)
+      const targetTemplateWidth = Math.floor(userWidth * 0.15);
+      const targetTemplateHeight = Math.floor((templateHeight / templateWidth) * targetTemplateWidth);
+
+      // Position template in bottom-right area (where a character might hold it)
+      const left = Math.floor(userWidth * 0.6);
+      const top = Math.floor(userHeight * 0.4);
+
+      // Resize template to fit
+      const resizedTemplate = await templateImage
+        .resize(targetTemplateWidth, targetTemplateHeight)
+        .png()
+        .toBuffer();
+
       // Place template as if character is holding it
       compositeImage = await userImage
         .composite([{
@@ -71,7 +93,65 @@ app.post("/api/generate-image", upload.fields([
         }])
         .png()
         .toBuffer();
-    } else if (type === "overlay") {
+    } else {
+      // Default fallback
+      const targetTemplateWidth = Math.floor(userWidth * 0.15);
+      const targetTemplateHeight = Math.floor((templateHeight / templateWidth) * targetTemplateWidth);
+      const left = Math.floor(userWidth * 0.6);
+      const top = Math.floor(userHeight * 0.4);
+
+      const resizedTemplate = await templateImage
+        .resize(targetTemplateWidth, targetTemplateHeight)
+        .png()
+        .toBuffer();
+
+      compositeImage = await userImage
+        .composite([{
+          input: resizedTemplate,
+          top: top,
+          left: left,
+          blend: 'over'
+        }])
+        .png()
+        .toBuffer();
+    }
+
+    // Optional: Use OpenAI for subtle blending/shadows (only if needed)
+    let finalImage = compositeImage;
+    if (process.env.OPENAI_API_KEY && (type === "mask" || type === "hold")) {
+      try {
+        const blendPrompt = type === "mask" 
+          ? "Blend this face mask naturally with the figure/person face. Make it look like they're wearing the mask. Don't change anything else."
+          : "Blend edges subtly, add natural shadows and lighting. Don't change the content, just improve the integration.";
+          
+        const blendResult = await openai.images.edit({
+          model: "dall-e-2",
+          image: compositeImage,
+          prompt: blendPrompt,
+          size,
+          response_format: "b64_json",
+        });
+        finalImage = Buffer.from(blendResult.data[0].b64_json, "base64");
+      } catch (aiError) {
+        console.log("AI blending failed, using composite only:", aiError.message);
+        // Continue with composite-only result
+      }
+    }
+
+    // Convert final result to base64
+    const base64Result = finalImage.toString('base64');
+    return res.json({ imageBase64: base64Result });
+  } catch (e) {
+    console.error("Image processing error:", e);
+    const status = e?.status || e?.response?.status || 500;
+    const message = e?.message || "Image processing failed";
+    return res.status(status).json({
+      error: message
+    });
+  }
+});
+
+app.listen(3001, () => console.log("API on :3001"));
       // Create semi-transparent overlay effect
       const transparentTemplate = await sharp(resizedTemplate)
         .composite([{

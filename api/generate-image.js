@@ -51,7 +51,7 @@ export default async function handler(req, res) {
         edit:
           "Composite the provided job application onto the uploaded photo so it looks naturally held by the figure. Use the uploaded photo exactly as it is — do not redraw or modify any part of it. Every pixel must remain identical except for blending in the paper. Preserve the photo's original aspect ratio, resolution, colors, and style.",
         overlay:
-          "Blend this face mask naturally with the person's face so it looks like they are wearing it. Match lighting and add subtle contact shadows. Do not change anything else."
+          "Blend this face mask from file mask.png naturally with the person's face so it looks like they are wearing it. Match lighting and add subtle contact shadows. Do not change anything else."
       };
 
       const effectiveType = type === "overlay" ? "overlay" : "edit";

@@ -4,21 +4,19 @@ import { fileToDataUrl } from "./utils";
 import JobApplicationSweeper from "./components/EndlessRunner";
 
 // Generate image with job application using proper image composition
-async function generateImage(userImage: File, mode: 'hold' | 'wear' | 'dual'): Promise<string> {
+async function generateImage(userImage: File, mode: 'hold' | 'wear'): Promise<string> {
   try {
     const form = new FormData();
     form.append("userImage", userImage, "user.png");
     form.append("mode", mode);
     
-    // Only fetch needed assets based on mode
-    if (mode === 'hold' || mode === 'dual') {
+    // Fetch the correct template based on mode
+    if (mode === 'hold') {
       const appBlob = await (await fetch("/image copy.png")).blob();
-      form.append("applicationImage", appBlob, "application.png");
-    }
-    
-    if (mode === 'wear' || mode === 'dual') {
+      form.append("templateImage", appBlob, "application.png");
+    } else if (mode === 'wear') {
       const maskBlob = await (await fetch("/mask.png")).blob();
-      form.append("maskImage", maskBlob, "mask.png");
+      form.append("templateImage", maskBlob, "mask.png");
     }
 
     const res = await fetch("/api/generate-image", {

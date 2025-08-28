@@ -433,10 +433,10 @@ function App() {
         
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-white font-mono text-2xl md:text-4xl lg:text-5xl uppercase tracking-widest text-center mb-16 border-b border-white pb-4">
-            SUBMIT YOUR $JOB APPLICATION
+            $JOB MEME GENERATION
           </h2>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Block 1: Get your Job Application */}
             <div className="border border-white p-6 bg-white">
               <div className="flex items-center gap-3 mb-4">
@@ -497,7 +497,34 @@ function App() {
               </div>
             </div>
 
-            {/* Block 2: Download Template */}
+            {/* Block 2: Get Jobbed */}
+            <div className="border border-white p-6 bg-white">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-black font-mono text-lg">{">"}</span>
+                <h3 className="text-black font-mono text-lg uppercase tracking-wider">get jobbed</h3>
+              </div>
+              
+              <p className="text-gray-700 mb-6 text-sm font-mono">upload an image and give your figure a job application mask!</p>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-black font-mono text-sm mb-2 uppercase tracking-wider">upload image:</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="w-full bg-gray-100 border border-black text-black p-3 focus:border-gray-500 focus:outline-none file:bg-black file:text-white file:border-none file:px-4 file:py-2 file:mr-4 font-mono text-sm"
+                  />
+                </div>
+                
+                <button
+                  className="w-full border border-black text-black px-6 py-3 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <ImageIcon className="w-5 h-5" />
+                  generate
+                </button>
+              </div>
+            </div>
+            {/* Block 3: Download Template */}
             <div className="border border-black p-6 bg-white relative overflow-visible">
               
               {/* Throwing application animation */}

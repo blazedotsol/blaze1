@@ -22,15 +22,13 @@ app.get("/api/health", (_req, res) => res.json({ ok: true, hasKey: !!process.env
 app.post("/api/generate-image",
   upload.fields([
     { name: 'userImage', maxCount: 1 },            // the figure/person
-    { name: 'templateImage', maxCount: 1 }         // either job application or mask
+    { name: 'templateImage', maxCount: 1 }         // job application template
   ]),
   async (req, res) => {
     try {
       const {
         size = "1024x1024",
-        mode = "hold", // "hold" or "wear"
-        promptHold = "Blend the paper so it looks like the character is holding a job application; match lighting and add a subtle contact shadow from the hand. Keep everything else unchanged.",
-        promptWear = "Make the overlay look like a face mask the person is wearing; match skin lighting, add strap/edge shading if needed, and keep all non-face regions unchanged."
+        mode = "hold" // "hold" or "wear"
       } = req.body || {};
 
       const userFile = req.files?.userImage?.[0];
@@ -39,6 +37,10 @@ app.post("/api/generate-image",
       if (!userFile) return res.status(400).json({ error: "Missing userImage" });
       if (!templateFile) return res.status(400).json({ error: "Missing templateImage" });
 
+      console.log("Processing mode:", mode);
+      console.log("User file size:", userFile.size);
+      console.log("Template file size:", templateFile.size);
+
       const userBuf = userFile.buffer;
       const templateBuf = templateFile.buffer;
 
@@ -46,53 +48,30 @@ app.post("/api/generate-image",
       const userSharp = sharp(userBuf).rotate();
       const { width: uW, height: uH } = await userSharp.metadata();
 
+      console.log("User image dimensions:", uW, "x", uH);
+
       let output;
 
       if (mode === "hold") {
-        // Heuristics for hand/hold placement (tune these to your input set):
+        // Simple composite for holding job application
         const holdW = Math.floor(uW * 0.22);
         const appMeta = await sharp(templateBuf).metadata();
         const holdH = Math.floor((appMeta.height / appMeta.width) * holdW);
         const holdLeft = Math.floor(uW * 0.60);
         const holdTop  = Math.floor(uH * 0.45);
 
+        console.log("Hold placement:", holdLeft, holdTop, holdW, holdH);
+
         const appResized = await sharp(templateBuf).resize(holdW, holdH).png().toBuffer();
 
-        const heldComposite = await userSharp
+        output = await userSharp
           .composite([{ input: appResized, left: holdLeft, top: holdTop, blend: 'over' }])
           .png()
           .toBuffer();
 
-        // Optional AI polish (restrict edits to just the paper area)
-        const heldMask = await sharp({
-          create: { width: uW, height: uH, channels: 4, background: { r:0, g:0, b:0, alpha:1 } }
-        }).composite([{
-          input: await sharp({
-            create: { width: holdW, height: holdH, channels: 4, background: { r:0, g:0, b:0, alpha:0 } }
-          }).png().toBuffer(),
-          left: holdLeft, top: holdTop
-        }]).png().toBuffer();
-
-        output = heldComposite;
-
-        if (USE_AI) {
-          try {
-            // gpt-image-1 supports image editing with a mask; transparent = editable area.
-            const ai1 = await openai.images.edits({
-              model: "gpt-image-1",
-              image: output,       // buffer
-              mask: heldMask,      // buffer
-              prompt: promptHold,
-              size,
-              response_format: "b64_json",
-            });
-            output = Buffer.from(ai1.data[0].b64_json, "base64");
-          } catch (e) {
-            console.warn("AI hold-blend failed; using sharp composite.", e?.message);
-          }
-        }
+        console.log("Hold composite created, size:", output.length);
       } else if (mode === "wear") {
-        // Simple center-top face heuristic; (optional) replace with real face detection if needed.
+        // Simple composite for wearing mask
         const maskW = Math.floor(uW * 0.30);
         const mMeta = await sharp(templateBuf).metadata();
         const maskH = Math.floor((mMeta.height / mMeta.width) * maskW);
@@ -100,48 +79,22 @@ app.post("/api/generate-image",
         const faceLeft = Math.floor(uW * 0.35);
         const faceTop  = Math.floor(uH * 0.20);
 
+        console.log("Wear placement:", faceLeft, faceTop, maskW, maskH);
+
         const resizedMask = await sharp(templateBuf).resize(maskW, maskH).png().toBuffer();
 
-        const wearComposite = await sharp(userBuf).rotate()
+        output = await sharp(userBuf).rotate()
           .composite([{
             input: resizedMask,
             left: faceLeft,
             top: faceTop,
             blend: 'over',
-            opacity: 0.92 // slight see-through looks more natural than multiply
+            opacity: 0.92
           }])
           .png()
           .toBuffer();
 
-        // Optional AI polish for Section 2 (restrict edits to just the face-mask area)
-        const wearAreaMask = await sharp({
-          create: { width: uW, height: uH, channels: 4, background: { r:0, g:0, b:0, alpha:1 } }
-        }).composite([{
-          input: await sharp({
-            create: { width: maskW, height: maskH, channels: 4, background: { r:0, g:0, b:0, alpha:0 } }
-          }).png().toBuffer(),
-          left: faceLeft, top: faceTop
-        }]).png().toBuffer();
-
-        output = wearComposite;
-
-        if (USE_AI) {
-          try {
-            const ai2 = await openai.images.edits({
-              model: "gpt-image-1",
-              image: output,       // buffer
-              mask: wearAreaMask,  // buffer
-              prompt: promptWear,
-              size,
-              response_format: "b64_json",
-            });
-            console.log("AI response received for wear mode");
-            output = Buffer.from(ai2.data[0].b64_json, "base64");
-          console.log("AI response received for hold mode");
-          } catch (e) {
-            console.warn("AI wear-mask blend failed; using sharp composite.", e?.message);
-          }
-        }
+        console.log("Wear composite created, size:", output.length);
       }
 
       const base64Result = output.toString('base64');

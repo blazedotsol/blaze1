@@ -114,23 +114,14 @@ export default function LocalFaceOverlay({ baseImageFile, maskImagePath = "/mask
       setDragging(null);
     };
 
-    const onWheel = (e: WheelEvent) => {
-      // zoom med scroll (Ctrl/trackpad) – skaler rundt senter
-      e.preventDefault();
-      const delta = e.deltaY > 0 ? 0.95 : 1.05;
-      setTf((t) => ({ ...t, scale: Math.min(Math.max(t.scale * delta, 0.1), 8) }));
-    };
-
     c.addEventListener("pointerdown", onDown);
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
-    c.addEventListener("wheel", onWheel, { passive: false });
 
     return () => {
       c.removeEventListener("pointerdown", onDown);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
-      c.removeEventListener("wheel", onWheel);
     };
   }, [dragging, tf, maskImg]);
 

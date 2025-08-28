@@ -48,11 +48,11 @@ app.post("/api/generate-image", upload.fields([
     let compositeImage;
     
     if (type === "mask") {
-      // For face mask - resize to cover face area and position on face
-      const targetTemplateWidth = Math.floor(userWidth * 0.3);
+      // For face mask - resize to cover face area and position on face (larger for mask effect)
+      const targetTemplateWidth = Math.floor(userWidth * 0.4);
       const targetTemplateHeight = Math.floor((templateHeight / templateWidth) * targetTemplateWidth);
-      const left = Math.floor(userWidth * 0.35);
-      const top = Math.floor(userHeight * 0.25);
+      const left = Math.floor(userWidth * 0.3);
+      const top = Math.floor(userHeight * 0.2);
 
       const resizedTemplate = await templateImage
         .resize(targetTemplateWidth, targetTemplateHeight)
@@ -64,7 +64,7 @@ app.post("/api/generate-image", upload.fields([
           input: resizedTemplate,
           top: top,
           left: left,
-          blend: 'over'
+          blend: 'multiply'
         }])
         .png()
         .toBuffer();
@@ -150,9 +150,14 @@ app.post("/api/generate-image", upload.fields([
     let finalImage = compositeImage;
     if (process.env.OPENAI_API_KEY && (type === "mask" || type === "hold" || type === "edit")) {
       try {
-        const blendPrompt = type === "mask" 
-          ? "Blend this face mask naturally with the figure/person face. Make it look like they're wearing the mask. Don't change anything else."
-          : "Blend edges subtly, add natural shadows and lighting. Don't change the content, just improve the integration.";
+        let blendPrompt;
+        if (type === "mask") {
+          blendPrompt = "Blend this face mask naturally with the figure/person face. Make it look like they're wearing the mask as a face covering. Don't change anything else about the photo.";
+        } else if (type === "hold") {
+          blendPrompt = "Composite the provided job application onto the uploaded photo so it looks naturally held by the figure. Use the uploaded photo exactly as it is — do not redraw or modify any part of it. Every pixel must remain identical except for blending in the paper.";
+        } else {
+          blendPrompt = "Blend edges subtly, add natural shadows and lighting. Don't change the content, just improve the integration.";
+        }
           
         const blendResult = await openai.images.edit({
           model: "dall-e-2",

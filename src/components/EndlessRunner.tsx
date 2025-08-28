@@ -16,6 +16,7 @@ interface Score {
 const JobApplicationSweeper: React.FC = () => {
   const [grid, setGrid] = useState<Cell[][]>([]);
   const [gameState, setGameState] = useState<'playing' | 'won' | 'lost'>('playing');
+  const [gameMode, setGameMode] = useState<'click' | 'flag'>('click');
   const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [revealedCount, setRevealedCount] = useState(0);
@@ -105,6 +106,14 @@ const JobApplicationSweeper: React.FC = () => {
     initializeGame();
   }, [initializeGame]);
 
+  const handleCellClick = (row: number, col: number) => {
+    if (gameMode === 'flag') {
+      toggleFlag(row, col);
+    } else {
+      revealCell(row, col);
+    }
+  };
+
   const revealCell = (row: number, col: number) => {
     if (gameState !== 'playing' || grid[row][col].isRevealed || grid[row][col].isFlagged) {
       return;
@@ -162,9 +171,7 @@ const JobApplicationSweeper: React.FC = () => {
     }
   };
 
-  const toggleFlag = (e: React.MouseEvent, row: number, col: number) => {
-    e.preventDefault();
-    
+  const toggleFlag = (row: number, col: number) => {
     if (gameState !== 'playing' || grid[row][col].isRevealed) {
       return;
     }
@@ -234,43 +241,127 @@ const JobApplicationSweeper: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center p-4 bg-gray-100 min-h-screen">
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+      <div className="bg-white shadow-lg p-6 max-w-6xl w-full">
         <h1 className="text-2xl font-bold text-center mb-4">JOB APPLICATION SWEEPER</h1>
         
         <p className="text-sm text-gray-600 text-center mb-4">
           A minesweeper-style game where you must avoid the hidden job applications! Click to reveal safe cells and flag suspicious ones.
         </p>
 
-        <div className="flex justify-between items-center mb-4">
-          <div className="bg-black text-white px-3 py-1 rounded text-sm">
-            Mode: Click 👆
-          </div>
-          <button
-            onClick={initializeGame}
-            className="bg-white border-2 border-black px-4 py-1 rounded text-sm hover:bg-gray-50"
-          >
-            New Game (9x9, {APPLICATION_COUNT} applications)
-          </button>
-        </div>
-
-        <div className="flex justify-between items-center mb-4 text-sm">
-          <div>Time: {elapsedTime}s</div>
-          <div>Flags: {flagCount}/{APPLICATION_COUNT}</div>
-        </div>
-
-        <div className="grid grid-cols-9 gap-0 mb-4 mx-auto w-fit border-2 border-gray-600">
-          {grid.map((row, rowIndex) =>
-            row.map((cell, colIndex) => (
-              <div
-                key={`${rowIndex}-${colIndex}`}
-                className={getCellClass(cell)}
-                onClick={() => revealCell(rowIndex, colIndex)}
-                onContextMenu={(e) => toggleFlag(e, rowIndex, colIndex)}
-              >
-                {getCellContent(cell)}
+        <div className="flex gap-8">
+          {/* Left side - Controls and Leaderboard */}
+          <div className="flex-1 space-y-4">
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setGameMode('click')}
+                  className={`px-3 py-1 text-sm border ${gameMode === 'click' ? 'bg-black text-white' : 'bg-white text-black border-black hover:bg-gray-50'}`}
+                >
+                  Click Mode 👆
+                </button>
+                <button
+                  onClick={() => setGameMode('flag')}
+                  className={`px-3 py-1 text-sm border ${gameMode === 'flag' ? 'bg-black text-white' : 'bg-white text-black border-black hover:bg-gray-50'}`}
+                >
+                  Flag Mode 🚩
+                </button>
               </div>
-            ))
-          )}
+              
+              <button
+                onClick={initializeGame}
+                className="bg-white border-2 border-black px-4 py-2 text-sm hover:bg-gray-50 w-full"
+              >
+                New Game (9x9, {APPLICATION_COUNT} applications)
+              </button>
+            </div>
+
+            <div className="space-y-2 text-sm">
+              <div>Time: {elapsedTime}s</div>
+              <div>Flags: {flagCount}/{APPLICATION_COUNT}</div>
+              <div>Mode: {gameMode === 'click' ? 'Click to reveal' : 'Click to flag'}</div>
+            </div>
+
+            {/* Instructions */}
+            <div className="text-xs text-gray-500 space-y-1">
+              <p><strong>Instructions:</strong></p>
+              <p>• Switch between Click and Flag modes</p>
+              <p>• Click mode: reveal cells</p>
+              <p>• Flag mode: mark suspicious cells</p>
+              <p>• Avoid the hidden job applications!</p>
+              <p>• Numbers show nearby applications</p>
+            </div>
+
+            {/* Leaderboard */}
+            <div className="space-y-2">
+              <button
+                onClick={() => setShowLeaderboard(!showLeaderboard)}
+                className="bg-gray-500 text-white px-4 py-2 text-sm hover:bg-gray-600 w-full"
+              >
+                {showLeaderboard ? 'Hide' : 'Show'} Leaderboard
+              </button>
+
+              {showLeaderboard && (
+                <div className="p-4 bg-gray-50">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="font-bold text-sm">🏆 Leaderboard</h3>
+                    {scores.length > 0 && (
+                      <button
+                        onClick={clearLeaderboard}
+                        className="text-red-500 text-xs hover:text-red-700"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  
+                  {scores.length === 0 ? (
+                    <p className="text-gray-500 text-sm">No scores yet - be the first!</p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-1">Rank</th>
+                            <th className="text-left py-1">Name</th>
+                            <th className="text-right py-1">Time</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {scores.map((score, index) => (
+                            <tr 
+                              key={index} 
+                              className={`border-b ${index < 3 ? 'bg-yellow-100' : ''}`}
+                            >
+                              <td className="py-1">#{index + 1}</td>
+                              <td className="py-1 truncate max-w-20">{score.name}</td>
+                              <td className="py-1 text-right">{score.time}s</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right side - Game Grid */}
+          <div className="flex-1 flex flex-col items-center">
+            <div className="grid grid-cols-9 gap-0 mb-4 border-2 border-gray-600">
+              {grid.map((row, rowIndex) =>
+                row.map((cell, colIndex) => (
+                  <div
+                    key={`${rowIndex}-${colIndex}`}
+                    className={getCellClass(cell)}
+                    onClick={() => handleCellClick(rowIndex, colIndex)}
+                  >
+                    {getCellContent(cell)}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
 
         {gameState === 'won' && (
@@ -315,67 +406,6 @@ const JobApplicationSweeper: React.FC = () => {
             </button>
           </div>
         )}
-
-        <div className="text-center">
-          <button
-            onClick={() => setShowLeaderboard(!showLeaderboard)}
-            className="bg-gray-500 text-white px-4 py-2 rounded text-sm hover:bg-gray-600 mb-2"
-          >
-            {showLeaderboard ? 'Hide' : 'Show'} Leaderboard
-          </button>
-
-          {showLeaderboard && (
-            <div className="mt-4 p-4 bg-gray-50 rounded">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="font-bold text-sm">🏆 Leaderboard</h3>
-                {scores.length > 0 && (
-                  <button
-                    onClick={clearLeaderboard}
-                    className="text-red-500 text-xs hover:text-red-700"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-              
-              {scores.length === 0 ? (
-                <p className="text-gray-500 text-sm">No scores yet - be the first!</p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-1">Rank</th>
-                        <th className="text-left py-1">Name</th>
-                        <th className="text-right py-1">Time</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {scores.map((score, index) => (
-                        <tr 
-                          key={index} 
-                          className={`border-b ${index < 3 ? 'bg-yellow-100' : ''}`}
-                        >
-                          <td className="py-1">#{index + 1}</td>
-                          <td className="py-1 truncate max-w-20">{score.name}</td>
-                          <td className="py-1 text-right">{score.time}s</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="mt-4 text-xs text-gray-500 text-center">
-          <p className="mb-1"><strong>Instructions:</strong></p>
-          <p>• Left click to reveal cells</p>
-          <p>• Right click to flag suspicious cells</p>
-          <p>• Avoid the hidden job applications!</p>
-          <p>• Numbers show nearby applications</p>
-        </div>
       </div>
     </div>
   );

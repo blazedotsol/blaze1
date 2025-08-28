@@ -12,6 +12,7 @@ async function generateJobApplicationImage(userImage: File): Promise<string> {
     // Fetch template image and add to form
     const tplBlob = await (await fetch("/image copy copy.png")).blob();
     form.append("templateImage", tplBlob, "template.png");
+    form.append("prompt", "Composite the provided job application onto the uploaded photo so it looks naturally held by the figure. Use the uploaded photo exactly as it is — do not redraw or modify any part of it. Every pixel must remain identical except for blending in the paper. Preserve the photo's original aspect ratio, resolution, colors, and style.");
 
     const res = await fetch("/api/generate-image", {
       method: "POST",

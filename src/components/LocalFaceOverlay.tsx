@@ -17,9 +17,8 @@ export default function LocalFaceOverlay({ baseImageFile, maskImagePath = "/mask
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [baseImg, setBaseImg] = useState<HTMLImageElement | null>(null);
   const [maskImg, setMaskImg] = useState<HTMLImageElement | null>(null);
-  const [tf, setTf] = useState<Transform>({ x: 0, y: 0, scale: 1, rotation: 0 });
+  const [tf, setTf] = useState<Transform>({ x: 0, y: 0, scale: 0.5, rotation: 0 });
   const [dragging, setDragging] = useState<null | { startX: number; startY: number; startTf: Transform }>(null);
-  const [mode, setMode] = useState<"move" | "rotate" | "scale">("move");
 
   // Last inn base-bildet fra file
   useEffect(() => {
@@ -30,7 +29,7 @@ export default function LocalFaceOverlay({ baseImageFile, maskImagePath = "/mask
       setBaseImg(img);
       // Sentrer mask når base endres
       const c = canvasRef.current;
-      if (c) setTf({ x: c.width / 2, y: c.height / 2, scale: 1, rotation: 0 });
+      if (c) setTf({ x: c.width / 2, y: c.height / 2, scale: 0.5, rotation: 0 });
       URL.revokeObjectURL(url);
     };
     img.src = url;
@@ -105,20 +104,9 @@ export default function LocalFaceOverlay({ baseImageFile, maskImagePath = "/mask
     const onMove = (e: PointerEvent) => {
       if (!dragging) return;
       const p = getPos(e);
-      if (mode === "move") {
-        const dx = p.x - dragging.startX;
-        const dy = p.y - dragging.startY;
-        setTf({ ...dragging.startTf, x: dragging.startTf.x + dx, y: dragging.startTf.y + dy });
-      } else if (mode === "rotate") {
-        const a0 = Math.atan2(dragging.startY - dragging.startTf.y, dragging.startX - dragging.startTf.x);
-        const a1 = Math.atan2(p.y - dragging.startTf.y, p.x - dragging.startTf.x);
-        setTf({ ...dragging.startTf, rotation: dragging.startTf.rotation + (a1 - a0) });
-      } else if (mode === "scale") {
-        const d0 = Math.hypot(dragging.startX - dragging.startTf.x, dragging.startY - dragging.startTf.y);
-        const d1 = Math.hypot(p.x - dragging.startTf.x, p.y - dragging.startTf.y);
-        const s = d0 === 0 ? dragging.startTf.scale : dragging.startTf.scale * (d1 / d0);
-        setTf({ ...dragging.startTf, scale: Math.min(Math.max(s, 0.1), 8) });
-      }
+      const dx = p.x - dragging.startX;
+      const dy = p.y - dragging.startY;
+      setTf({ ...dragging.startTf, x: dragging.startTf.x + dx, y: dragging.startTf.y + dy });
     };
 
     const onUp = (e: PointerEvent) => {
@@ -144,12 +132,12 @@ export default function LocalFaceOverlay({ baseImageFile, maskImagePath = "/mask
       window.removeEventListener("pointerup", onUp);
       c.removeEventListener("wheel", onWheel);
     };
-  }, [dragging, tf, mode, maskImg]);
+  }, [dragging, tf, maskImg]);
 
   const centerMask = () => {
     const c = canvasRef.current;
     if (!c) return;
-    setTf({ x: c.width / 2, y: c.height / 2, scale: 1, rotation: 0 });
+    setTf({ x: c.width / 2, y: c.height / 2, scale: 0.5, rotation: 0 });
   };
 
   const exportImage = () => {
@@ -166,14 +154,9 @@ export default function LocalFaceOverlay({ baseImageFile, maskImagePath = "/mask
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-2 items-center text-sm">
-        <span className="font-mono uppercase">tool:</span>
-        <div className="flex gap-1">
-          <button onClick={() => setMode("move")}   className={"border px-2 py-1 " + (mode==="move"?"bg-black text-white":"")}>move</button>
-          <button onClick={() => setMode("rotate")} className={"border px-2 py-1 " + (mode==="rotate"?"bg-black text-white":"")}>rotate</button>
-          <button onClick={() => setMode("scale")}  className={"border px-2 py-1 " + (mode==="scale"?"bg-black text-white":"")}>scale</button>
-          <button onClick={centerMask} className="border px-2 py-1">reset</button>
-        </div>
+      <div className="flex gap-4 items-center text-sm">
+        <span className="font-mono uppercase text-xs">drag to move</span>
+        <button onClick={centerMask} className="border border-black px-2 py-1 hover:bg-black hover:text-white font-mono text-xs uppercase">reset</button>
       </div>
 
       <div className="flex gap-4 items-center">

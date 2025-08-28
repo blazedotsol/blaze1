@@ -26,6 +26,14 @@ async function generateImage(userImage: File, mode: 'hold' | 'wear'): Promise<st
 
     const data = await res.json();
 
+    console.log("API Response received:", {
+      ok: res.ok,
+      status: res.status,
+      dataKeys: Object.keys(data),
+      hasImageBase64: !!data?.imageBase64,
+      imageBase64Length: data?.imageBase64?.length || 0
+    });
+
     if (!res.ok) {
       const msg = data?.error || `HTTP ${res.status}`;
       throw new Error(msg);

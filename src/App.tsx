@@ -8,22 +8,23 @@ async function generateJobApplicationImage(userImage: File): Promise<string> {
   try {
     const form = new FormData();
     form.append("userImage", userImage, "user.png");
+    
+    // Fetch template image and add to form
+    const tplBlob = await (await fetch("/image copy copy.png")).blob();
+    form.append("templateImage", tplBlob, "template.png");
+    form.append("prompt", "Composite the provided job application onto the uploaded photo so it looks naturally held by the figure. Use the uploaded photo exactly as it is — do not redraw or modify any part of it. Every pixel must remain identical except for blending in the paper. Preserve the photo's original aspect ratio, resolution, colors, and style.");
+    form.append("type", "hold");
 
-    const res = await fetch("/api/generate-job-application", {
+    const res = await fetch("/api/generate-image", {
       method: "POST",
       body: form,
     });
 
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error("Server response:", errorText);
-      throw new Error(`HTTP ${res.status}: ${errorText}`);
-    }
-
     const data = await res.json();
 
-    if (data.error) {
-      throw new Error(data.error);
+    if (!res.ok) {
+      const msg = data?.error || `HTTP ${res.status}`;
+      throw new Error(msg);
     }
 
     const dataUrl = data?.imageBase64 ? `data:image/png;base64,${data.imageBase64}` : data?.dataUrl;
@@ -42,22 +43,23 @@ async function generateFaceMaskImage(userImage: File): Promise<string> {
   try {
     const form = new FormData();
     form.append("userImage", userImage, "user.png");
+    
+    // Fetch the job application template as mask and add to form
+    const maskBlob = await (await fetch("/image copy copy.png")).blob();
+    form.append("templateImage", maskBlob, "mask.png");
+    form.append("prompt", "Blend this face mask naturally with the figure/person face. Make it look like they're wearing the mask as a face covering. Don't change anything else about the photo.");
+    form.append("type", "mask");
 
-    const res = await fetch("/api/generate-face-mask", {
+    const res = await fetch("/api/generate-image", {
       method: "POST",
       body: form,
     });
 
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error("Server response:", errorText);
-      throw new Error(`HTTP ${res.status}: ${errorText}`);
-    }
-
     const data = await res.json();
 
-    if (data.error) {
-      throw new Error(data.error);
+    if (!res.ok) {
+      const msg = data?.error || `HTTP ${res.status}`;
+      throw new Error(msg);
     }
 
     const dataUrl = data?.imageBase64 ? `data:image/png;base64,${data.imageBase64}` : data?.dataUrl;

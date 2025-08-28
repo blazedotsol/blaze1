@@ -4,18 +4,22 @@ import { fileToDataUrl } from "./utils";
 import JobApplicationSweeper from "./components/EndlessRunner";
 
 // Generate image with job application using proper image composition
-async function generateDualPanelImage(userImage: File): Promise<string> {
+async function generateImage(userImage: File, mode: 'hold' | 'wear' | 'dual'): Promise<string> {
   try {
     const form = new FormData();
     form.append("userImage", userImage, "user.png");
+    form.append("mode", mode);
     
-    // Fetch application image and add to form
-    const appBlob = await (await fetch("/image copy copy.png")).blob();
-    form.append("applicationImage", appBlob, "application.png");
+    // Only fetch needed assets based on mode
+    if (mode === 'hold' || mode === 'dual') {
+      const appBlob = await (await fetch("/image copy copy.png")).blob();
+      form.append("applicationImage", appBlob, "application.png");
+    }
     
-    // Fetch mask image and add to form
-    const maskBlob = await (await fetch("/mask.png")).blob();
-    form.append("maskImage", maskBlob, "mask.png");
+    if (mode === 'wear' || mode === 'dual') {
+      const maskBlob = await (await fetch("/mask.png")).blob();
+      form.append("maskImage", maskBlob, "mask.png");
+    }
 
     const res = await fetch("/api/generate-image", {
       method: "POST",
@@ -54,6 +58,13 @@ function App() {
   const [uploadedImage1, setUploadedImage1] = useState<File | null>(null);
   const [generatedMeme1, setGeneratedMeme1] = useState<string | null>(null);
   const [error1, setError1] = useState<string | null>(null);
+
+  // Block 2 states
+  const [isGenerating2, setIsGenerating2] = useState(false);
+  const [uploadedImage2, setUploadedImage2] = useState<File | null>(null);
+  const [generatedMeme2, setGeneratedMeme2] = useState<string | null>(null);
+  const [error2, setError2] = useState<string | null>(null);
+
   const [isThrowingAnimation, setIsThrowingAnimation] = useState(false);
 
   // Rate limiting helper functions
@@ -119,7 +130,15 @@ function App() {
     }
   };
 
-  const generateDualPanel = async () => {
+  const handleImageUpload2 = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedImage2(file);
+      setError2(null);
+    }
+  };
+
+  const generateHoldApplication = async () => {
     if (!uploadedImage1) {
       setError1("Please upload an image first");
       return;
@@ -140,13 +159,44 @@ function App() {
       // Increment rate limit counter before making request
       incrementRateLimit();
       
-      const dataUrl = await generateDualPanelImage(uploadedImage1);
+      const dataUrl = await generateImage(uploadedImage1, 'hold');
       setGeneratedMeme1(dataUrl);
     } catch (err: any) {
       console.error("Error generating image:", err);
       setError1(err?.message || "Failed to generate image");
     } finally {
       setIsGenerating1(false);
+    }
+  };
+
+  const generateWearMask = async () => {
+    if (!uploadedImage2) {
+      setError2("Please upload an image first");
+      return;
+    }
+
+    // Check rate limit
+    const rateCheck = checkRateLimit();
+    if (!rateCheck.allowed) {
+      const resetIn = Math.ceil((rateCheck.resetTime - Date.now()) / 1000);
+      setError2(`Rate limit exceeded. Try again in ${resetIn} seconds. (Max ${MAX_GENERATIONS_PER_MINUTE} per minute)`);
+      return;
+    }
+    setIsGenerating2(true);
+    setError2(null);
+    setGeneratedMeme2(null);
+
+    try {
+      // Increment rate limit counter before making request
+      incrementRateLimit();
+      
+      const dataUrl = await generateImage(uploadedImage2, 'wear');
+      setGeneratedMeme2(dataUrl);
+    } catch (err: any) {
+      console.error("Error generating image:", err);
+      setError2(err?.message || "Failed to generate image");
+    } finally {
+      setIsGenerating2(false);
     }
   };
 
@@ -440,15 +490,15 @@ function App() {
             $JOB MEME GENERATION
           </h2>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Block 1: Generate Both Panels */}
-            <div className="border border-white p-6 bg-white lg:col-span-1">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Block 1: Hold Job Application */}
+            <div className="border border-white p-6 bg-white">
               <div className="flex items-center gap-3 mb-4">
                 <span className="text-black font-mono text-lg">{">"}</span>
-                <h3 className="text-black font-mono text-lg uppercase tracking-wider">generate dual panel</h3>
+                <h3 className="text-black font-mono text-lg uppercase tracking-wider">hold job application</h3>
               </div>
               
-              <p className="text-gray-700 mb-6 text-sm font-mono">upload an image and get both: holding job application + wearing mask!</p>
+              <p className="text-gray-700 mb-6 text-sm font-mono">upload an image and make the figure hold a job application!</p>
               
               <div className="space-y-4">
                 <div>
@@ -468,7 +518,7 @@ function App() {
                 </div>
                 
                 <button
-                  onClick={generateDualPanel}
+                  onClick={generateHoldApplication}
                   disabled={isGenerating1 || !uploadedImage1}
                   className="w-full border border-black text-black px-6 py-3 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -487,10 +537,10 @@ function App() {
                 
                 {generatedMeme1 && (
                   <div className="mt-4">
-                    <img src={generatedMeme1} alt="Generated Dual Panel Meme" className="w-full border border-black" />
+                    <img src={generatedMeme1} alt="Generated Job Application Meme" className="w-full border border-black" />
                     <a
                       href={generatedMeme1}
-                      download="dual-panel-meme.png"
+                      download="job-application-meme.png"
                       className="mt-2 w-full border border-black text-black px-4 py-2 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2"
                     >
                       <Download className="w-4 h-4" />
@@ -501,8 +551,68 @@ function App() {
               </div>
             </div>
 
-            {/* Block 2: Download Template */}
-            <div className="border border-black p-6 bg-white relative overflow-visible lg:col-span-1">
+            {/* Block 2: Wear Job Mask */}
+            <div className="border border-white p-6 bg-white">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-black font-mono text-lg">{">"}</span>
+                <h3 className="text-black font-mono text-lg uppercase tracking-wider">wear job mask</h3>
+              </div>
+              
+              <p className="text-gray-700 mb-6 text-sm font-mono">upload an image and give your figure a job application face mask!</p>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-black font-mono text-sm mb-2 uppercase tracking-wider">upload image:</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload2}
+                    className="w-full bg-gray-100 border border-black text-black p-3 focus:border-gray-500 focus:outline-none file:bg-black file:text-white file:border-none file:px-4 file:py-2 file:mr-4 font-mono text-sm"
+                  />
+                  {uploadedImage2 && (
+                    <p className="text-black text-sm mt-2 font-mono">✓ {uploadedImage2.name}</p>
+                  )}
+                  {error2 && (
+                    <p className="text-red-600 text-sm mt-2 font-mono">error: {error2}</p>
+                  )}
+                </div>
+                
+                <button
+                  onClick={generateWearMask}
+                  disabled={isGenerating2 || !uploadedImage2}
+                  className="w-full border border-black text-black px-6 py-3 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isGenerating2 ? (
+                    <>
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                      generating...
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="w-5 h-5" />
+                      generate
+                    </>
+                  )}
+                </button>
+                
+                {generatedMeme2 && (
+                  <div className="mt-4">
+                    <img src={generatedMeme2} alt="Generated Job Mask Meme" className="w-full border border-black" />
+                    <a
+                      href={generatedMeme2}
+                      download="job-mask-meme.png"
+                      className="mt-2 w-full border border-black text-black px-4 py-2 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      download
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Block 3: Download Template */}
+            <div className="border border-black p-6 bg-white relative overflow-visible">
               
               {/* Throwing application animation */}
               {isThrowingAnimation && (

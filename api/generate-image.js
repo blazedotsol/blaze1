@@ -1,12 +1,17 @@
 // api/generate-image.js
+import OpenAI from "openai";
 import formidable from "formidable";
 import fs from "fs";
 
 export const config = {
   api: {
-    bodyParser: false, // because we're sending FormData
+    bodyParser: false, // fordi vi sender FormData
   },
 };
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 export default async function handler(req, res) {
   // CORS headers
@@ -23,10 +28,11 @@ export default async function handler(req, res) {
     try {
       if (err) throw err;
 
+      // LOGG for å se hva som faktisk kom inn:
       console.log("Files received:", Object.keys(files));
       console.log("Fields received:", Object.keys(fields));
 
-      // formidable gives arrays
+      // NB: formidable gir arrays
       const userFile = files.userImage?.[0];
       const tplFile = files.templateImage?.[0];
       
@@ -39,19 +45,21 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Missing templateImage" });
       }
 
-      // Read the files
-      const userBuffer = fs.readFileSync(userFile.filepath);
-      const templateBuffer = fs.readFileSync(tplFile.filepath);
+      const baseStream = fs.createReadStream(userFile.filepath);
+      const tplStream = fs.createReadStream(tplFile.filepath);
 
-      // Simple base64 encoding for now - just return the user image with template overlaid
-      const userBase64 = userBuffer.toString('base64');
+      // Different prompts based on the request type or use a default
+      let prompt = "Composite the provided job application onto the uploaded photo so it looks naturally held by the figure. Use the uploaded photo exactly as it is — do not redraw or modify any part of it. Every pixel must remain identical except for blending in the paper. Preserve the photo’s original aspect ratio, resolution, colors, and style.";
       
-      console.log("Generated base64 length:", userBase64.length);
-      
-      const responseData = { imageBase64: userBase64 };
-      console.log("Sending response with keys:", Object.keys(responseData));
-      
-      res.status(200).json(responseData);
+      const result = await openai.images.edit({
+        model: "gpt-image-1",
+        prompt: prompt,
+        image: [baseStream, tplStream], // VIKTIG: to bilder
+        size: "1024x1024",
+      });
+
+      const b64 = result.data[0].b64_json;
+      res.status(200).json({ dataUrl: `data:image/png;base64,${b64}` });
     } catch (e) {
       console.error("generate-image error:", e);
       const status = e?.status || e?.response?.status || 500;

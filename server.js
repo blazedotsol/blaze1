@@ -9,6 +9,7 @@ import path from "path";
 const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: "10mb" }));
+app.use(express.static('public'));
 
 // Configure multer for file uploads
 const upload = multer({ 

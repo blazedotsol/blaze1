@@ -202,8 +202,8 @@ const JobApplicationSweeper: React.FC = () => {
 
   const shareScore = () => {
     const rank = scores.findIndex(score => score.name === playerName && score.time === elapsedTime) + 1;
-    const text = `I just completed Job Application Sweeper in ${elapsedTime}s! ${rank > 0 ? `Ranked #${rank} on the leaderboard!` : ''} Can you beat my time?`;
-    const url = window.location.href;
+    const text = `I just completed $Job Application Sweeper in ${elapsedTime}s! Can you beat my time?`;
+    const url = 'https://www.jobapplication.meme/';
     window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
   };
 

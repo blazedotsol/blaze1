@@ -18,8 +18,6 @@ export default function LocalFaceOverlay({ baseImageFile, maskImagePath = "/mask
   const [baseImg, setBaseImg] = useState<HTMLImageElement | null>(null);
   const [maskImg, setMaskImg] = useState<HTMLImageElement | null>(null);
   const [tf, setTf] = useState<Transform>({ x: 0, y: 0, scale: 1, rotation: 0 });
-  const [opacity, setOpacity] = useState(0.95);
-  const [shadow, setShadow] = useState(0.15); // 0–0.5 subtil "contact shadow"
   const [dragging, setDragging] = useState<null | { startX: number; startY: number; startTf: Transform }>(null);
   const [mode, setMode] = useState<"move" | "rotate" | "scale">("move");
 
@@ -78,28 +76,12 @@ export default function LocalFaceOverlay({ baseImageFile, maskImagePath = "/mask
     const drawW = baseMaskW * tf.scale;
     const drawH = baseMaskH * tf.scale;
 
-    // Subtil "contact shadow" under masken (fake 3D)
-    if (shadow > 0) {
-      ctx.save();
-      ctx.translate(tf.x, tf.y);
-      ctx.rotate(tf.rotation);
-      ctx.globalAlpha = Math.min(shadow, 0.5);
-      ctx.filter = "blur(6px)";
-      ctx.drawImage(maskImg, -drawW / 2 + 3, -drawH / 2 + 6, drawW, drawH);
-      ctx.restore();
-      ctx.filter = "none";
-      ctx.globalAlpha = 1;
-    }
-
-    // Tegn mask med ønsket opasitet
+    // Tegn mask
     ctx.save();
     ctx.translate(tf.x, tf.y);
     ctx.rotate(tf.rotation);
-    ctx.globalAlpha = Math.min(Math.max(opacity, 0), 1);
     ctx.drawImage(maskImg, -drawW / 2, -drawH / 2, drawW, drawH);
     ctx.restore();
-    ctx.globalAlpha = 1;
-  }, [baseImg, maskImg, tf, opacity, shadow]);
 
   // Pointer handling (drag / rotate / scale)
   useEffect(() => {

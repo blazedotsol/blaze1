@@ -82,6 +82,8 @@ export default function LocalFaceOverlay({ baseImageFile, maskImagePath = "/mask
     ctx.rotate(tf.rotation);
     ctx.drawImage(maskImg, -drawW / 2, -drawH / 2, drawW, drawH);
     ctx.restore();
+  }
+  )
 
   // Pointer handling (drag / rotate / scale)
   useEffect(() => {

@@ -52,6 +52,12 @@ function App() {
   const [error1, setError1] = useState<string | null>(null);
   const [isThrowingAnimation, setIsThrowingAnimation] = useState(false);
 
+  // Block 2 states
+  const [isGenerating2, setIsGenerating2] = useState(false);
+  const [uploadedImage2, setUploadedImage2] = useState<File | null>(null);
+  const [generatedMeme2, setGeneratedMeme2] = useState<string | null>(null);
+  const [error2, setError2] = useState<string | null>(null);
+
   // Rate limiting helper functions
   const checkRateLimit = (): { allowed: boolean; remaining: number; resetTime: number } => {
     const now = Date.now();
@@ -115,6 +121,14 @@ function App() {
     }
   };
 
+  const handleImageUpload2 = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedImage2(file);
+      setError2(null);
+    }
+  };
+
   const generateJobApplication = async () => {
     if (!uploadedImage1) {
       setError1("Please upload an image first");
@@ -143,6 +157,58 @@ function App() {
       setError1(err?.message || "Failed to generate image");
     } finally {
       setIsGenerating1(false);
+    }
+  };
+
+  const generateJobMask = async () => {
+    if (!uploadedImage2) {
+      setError2("Please upload an image first");
+      return;
+    }
+
+    // Check rate limit
+    const rateCheck = checkRateLimit();
+    if (!rateCheck.allowed) {
+      const resetIn = Math.ceil((rateCheck.resetTime - Date.now()) / 1000);
+      setError2(`Rate limit exceeded. Try again in ${resetIn} seconds. (Max ${MAX_GENERATIONS_PER_MINUTE} per minute)`);
+      return;
+    }
+    setIsGenerating2(true);
+    setError2(null);
+    setGeneratedMeme2(null);
+
+    try {
+      // Increment rate limit counter before making request
+      incrementRateLimit();
+      
+      const form = new FormData();
+      form.append("userImage", uploadedImage2, "user.png");
+      
+      // Fetch mask image and add to form
+      const maskBlob = await (await fetch("/mask.png")).blob();
+      form.append("templateImage", maskBlob, "mask.png");
+      form.append("prompt", "Overlay this transparent PNG mask (mask.png) directly on the face of the person/character in the image. Do not change anything else in the image. Keep the background, colors, lighting, and details exactly as they are. Only add the mask on top of the face.");
+
+      const res = await fetch("/api/generate-image", {
+        method: "POST",
+        body: form,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        const msg = data?.error || `HTTP ${res.status}`;
+        throw new Error(msg);
+      }
+
+      const dataUrl = data?.dataUrl;
+      if (!dataUrl) throw new Error("Empty response from API");
+      setGeneratedMeme2(dataUrl);
+    } catch (err: any) {
+      console.error("Error generating mask image:", err);
+      setError2(err?.message || "Failed to generate mask image");
+    } finally {
+      setIsGenerating2(false);
     }
   };
 
@@ -512,16 +578,48 @@ function App() {
                   <input
                     type="file"
                     accept="image/*"
+                    onChange={handleImageUpload2}
                     className="w-full bg-gray-100 border border-black text-black p-3 focus:border-gray-500 focus:outline-none file:bg-black file:text-white file:border-none file:px-4 file:py-2 file:mr-4 font-mono text-sm"
                   />
+                  {uploadedImage2 && (
+                    <p className="text-black text-sm mt-2 font-mono">✓ {uploadedImage2.name}</p>
+                  )}
+                  {error2 && (
+                    <p className="text-red-600 text-sm mt-2 font-mono">error: {error2}</p>
+                  )}
                 </div>
                 
                 <button
+                  onClick={generateJobMask}
+                  disabled={isGenerating2 || !uploadedImage2}
                   className="w-full border border-black text-black px-6 py-3 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2"
                 >
-                  <ImageIcon className="w-5 h-5" />
-                  generate
+                  {isGenerating2 ? (
+                    <>
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                      generating...
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="w-5 h-5" />
+                      generate
+                    </>
+                  )}
                 </button>
+                
+                {generatedMeme2 && (
+                  <div className="mt-4">
+                    <img src={generatedMeme2} alt="Generated Job Mask Meme" className="w-full border border-black" />
+                    <a
+                      href={generatedMeme2}
+                      download="job-mask-meme.png"
+                      className="mt-2 w-full border border-black text-black px-4 py-2 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      download
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
             {/* Block 3: Download Template */}

@@ -493,7 +493,7 @@ function App() {
             <div className="border border-white p-6 bg-white">
               <div className="flex items-center gap-3 mb-4">
                 <span className="text-black font-mono text-lg">{">"}</span>
-                <h3 className="text-black font-mono text-lg uppercase tracking-wider">hold job application</h3>
+                <h3 className="text-black font-mono text-lg uppercase tracking-wider">hold $job</h3>
               </div>
               
               <p className="text-gray-700 mb-6 text-sm font-mono">upload an image and make the figure hold a job application!</p>
@@ -553,7 +553,7 @@ function App() {
             <div className="border border-white p-6 bg-white">
               <div className="flex items-center gap-3 mb-4">
                 <span className="text-black font-mono text-lg">{">"}</span>
-                <h3 className="text-black font-mono text-lg uppercase tracking-wider">wear job mask</h3>
+                <h3 className="text-black font-mono text-lg uppercase tracking-wider">get jobbed</h3>
               </div>
               
               <p className="text-gray-700 mb-6 text-sm font-mono">upload an image and give your figure a job application face mask!</p>

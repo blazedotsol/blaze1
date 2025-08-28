@@ -615,7 +615,7 @@ function App() {
                   />
                 ) : (
                   <p className="text-gray-600 font-mono text-xs">
-                    Tip: After you upload, drag/rotate/scale the paper overlay on the subject. Scroll to zoom.
+                    Tip: After you upload, drag/rotate/scale the paper overlay on the subject.
                   </p>
                 )}
                 

@@ -22,39 +22,37 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 app.get("/api/health", (_req, res) => res.json({ ok: true, hasKey: !!process.env.OPENAI_API_KEY }));
 
 // Job Application endpoint
-app.post("/api/generate-job-application", upload.fields([
-  { name: 'userImage', maxCount: 1 },
-  { name: 'templateImage', maxCount: 1 }
-]), async (req, res) => {
+app.post("/api/generate-job-application", upload.single('userImage'), async (req, res) => {
   try {
-    const size = "1024x1024";
-    const userImageFile = req.files?.userImage?.[0];
-    const templateImageFile = req.files?.templateImage?.[0];
+    console.log("Job application endpoint hit");
+    const userImageFile = req.file;
     
-    if (!userImageFile) return res.status(400).json({ error: "Missing user image" });
-    if (!templateImageFile) return res.status(400).json({ error: "Missing template image" });
+    if (!userImageFile) {
+      console.log("No user image provided");
+      return res.status(400).json({ error: "Missing user image" });
+    }
 
-    // Read image buffers directly from multer
+    console.log("User image received:", userImageFile.originalname);
+
+    // Get template image from public folder
+    const templatePath = path.join(process.cwd(), 'public', 'image copy copy.png');
+    const templateBuffer = await sharp(templatePath).png().toBuffer();
+    
+    // Get user image
     const userImageBuffer = userImageFile.buffer;
-    const templateImageBuffer = templateImageFile.buffer;
-
-    // Get image dimensions
     const userImage = sharp(userImageBuffer);
     const { width: userWidth, height: userHeight } = await userImage.metadata();
     
-    const templateImage = sharp(templateImageBuffer);
-    const { width: templateWidth, height: templateHeight } = await templateImage.metadata();
-
     // Job Application: Calculate template size (make it about 15% of the user image width)
     const targetTemplateWidth = Math.floor(userWidth * 0.15);
-    const targetTemplateHeight = Math.floor((templateHeight / templateWidth) * targetTemplateWidth);
+    const targetTemplateHeight = Math.floor(targetTemplateWidth * 1.3); // Approximate aspect ratio
 
     // Position template in bottom-right area (where a character might hold it)
     const left = Math.floor(userWidth * 0.6);
     const top = Math.floor(userHeight * 0.4);
 
     // Resize template to fit
-    const resizedTemplate = await templateImage
+    const resizedTemplate = await sharp(templateBuffer)
       .resize(targetTemplateWidth, targetTemplateHeight)
       .png()
       .toBuffer();
@@ -80,7 +78,7 @@ app.post("/api/generate-job-application", upload.fields([
           model: "dall-e-2",
           image: compositeImage,
           prompt: blendPrompt,
-          size,
+          size: "1024x1024",
           response_format: "b64_json",
         });
         finalImage = Buffer.from(blendResult.data[0].b64_json, "base64");
@@ -104,36 +102,34 @@ app.post("/api/generate-job-application", upload.fields([
 });
 
 // Face Mask endpoint
-app.post("/api/generate-face-mask", upload.fields([
-  { name: 'userImage', maxCount: 1 },
-  { name: 'templateImage', maxCount: 1 }
-]), async (req, res) => {
+app.post("/api/generate-face-mask", upload.single('userImage'), async (req, res) => {
   try {
-    const size = "1024x1024";
-    const userImageFile = req.files?.userImage?.[0];
-    const templateImageFile = req.files?.templateImage?.[0];
+    console.log("Face mask endpoint hit");
+    const userImageFile = req.file;
     
-    if (!userImageFile) return res.status(400).json({ error: "Missing user image" });
-    if (!templateImageFile) return res.status(400).json({ error: "Missing template image" });
+    if (!userImageFile) {
+      console.log("No user image provided");
+      return res.status(400).json({ error: "Missing user image" });
+    }
 
-    // Read image buffers directly from multer
+    console.log("User image received:", userImageFile.originalname);
+
+    // Get template image from public folder
+    const templatePath = path.join(process.cwd(), 'public', 'image copy copy.png');
+    const templateBuffer = await sharp(templatePath).png().toBuffer();
+    
+    // Get user image
     const userImageBuffer = userImageFile.buffer;
-    const templateImageBuffer = templateImageFile.buffer;
-
-    // Get image dimensions
     const userImage = sharp(userImageBuffer);
     const { width: userWidth, height: userHeight } = await userImage.metadata();
     
-    const templateImage = sharp(templateImageBuffer);
-    const { width: templateWidth, height: templateHeight } = await templateImage.metadata();
-
     // Face Mask: resize to cover face area and position on face (larger for mask effect)
     const targetTemplateWidth = Math.floor(userWidth * 0.4);
-    const targetTemplateHeight = Math.floor((templateHeight / templateWidth) * targetTemplateWidth);
+    const targetTemplateHeight = Math.floor(targetTemplateWidth * 1.3); // Approximate aspect ratio
     const left = Math.floor(userWidth * 0.3);
     const top = Math.floor(userHeight * 0.2);
 
-    const resizedTemplate = await templateImage
+    const resizedTemplate = await sharp(templateBuffer)
       .resize(targetTemplateWidth, targetTemplateHeight)
       .png()
       .toBuffer();
@@ -158,7 +154,7 @@ app.post("/api/generate-face-mask", upload.fields([
           model: "dall-e-2",
           image: compositeImage,
           prompt: blendPrompt,
-          size,
+          size: "1024x1024",
           response_format: "b64_json",
         });
         finalImage = Buffer.from(blendResult.data[0].b64_json, "base64");

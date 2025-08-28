@@ -8,21 +8,22 @@ async function generateJobApplicationImage(userImage: File): Promise<string> {
   try {
     const form = new FormData();
     form.append("userImage", userImage, "user.png");
-    
-    // Fetch template image and add to form
-    const tplBlob = await (await fetch("/image copy copy.png")).blob();
-    form.append("templateImage", tplBlob, "template.png");
 
     const res = await fetch("/api/generate-job-application", {
       method: "POST",
       body: form,
     });
 
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("Server response:", errorText);
+      throw new Error(`HTTP ${res.status}: ${errorText}`);
+    }
+
     const data = await res.json();
 
-    if (!res.ok) {
-      const msg = data?.error || `HTTP ${res.status}`;
-      throw new Error(msg);
+    if (data.error) {
+      throw new Error(data.error);
     }
 
     const dataUrl = data?.imageBase64 ? `data:image/png;base64,${data.imageBase64}` : data?.dataUrl;
@@ -41,21 +42,22 @@ async function generateFaceMaskImage(userImage: File): Promise<string> {
   try {
     const form = new FormData();
     form.append("userImage", userImage, "user.png");
-    
-    // Fetch template image and add to form
-    const maskBlob = await (await fetch("/image copy copy.png")).blob();
-    form.append("templateImage", maskBlob, "template.png");
 
     const res = await fetch("/api/generate-face-mask", {
       method: "POST",
       body: form,
     });
 
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("Server response:", errorText);
+      throw new Error(`HTTP ${res.status}: ${errorText}`);
+    }
+
     const data = await res.json();
 
-    if (!res.ok) {
-      const msg = data?.error || `HTTP ${res.status}`;
-      throw new Error(msg);
+    if (data.error) {
+      throw new Error(data.error);
     }
 
     const dataUrl = data?.imageBase64 ? `data:image/png;base64,${data.imageBase64}` : data?.dataUrl;

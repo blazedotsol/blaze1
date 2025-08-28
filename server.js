@@ -93,8 +93,38 @@ app.post("/api/generate-image", upload.fields([
         }])
         .png()
         .toBuffer();
+    } else if (type === "edit") {
+      // Calculate template size
+      const targetTemplateWidth = Math.floor(userWidth * 0.2);
+      const targetTemplateHeight = Math.floor((templateHeight / templateWidth) * targetTemplateWidth);
+
+      const resizedTemplate = await templateImage
+        .resize(targetTemplateWidth, targetTemplateHeight)
+        .png()
+        .toBuffer();
+
+      // Create semi-transparent overlay effect
+      const transparentTemplate = await sharp(resizedTemplate)
+        .composite([{
+          input: Buffer.from(`<svg width="${targetTemplateWidth}" height="${targetTemplateHeight}">
+            <rect width="100%" height="100%" fill="white" opacity="0.3"/>
+          </svg>`),
+          blend: 'multiply'
+        }])
+        .png()
+        .toBuffer();
+
+      compositeImage = await userImage
+        .composite([{
+          input: transparentTemplate,
+          top: Math.floor(userHeight * 0.2),
+          left: Math.floor(userWidth * 0.2),
+          blend: 'overlay'
+        }])
+        .png()
+        .toBuffer();
     } else {
-      // Default fallback
+      // Default: just place template
       const targetTemplateWidth = Math.floor(userWidth * 0.15);
       const targetTemplateHeight = Math.floor((templateHeight / templateWidth) * targetTemplateWidth);
       const left = Math.floor(userWidth * 0.6);
@@ -118,7 +148,7 @@ app.post("/api/generate-image", upload.fields([
 
     // Optional: Use OpenAI for subtle blending/shadows (only if needed)
     let finalImage = compositeImage;
-    if (process.env.OPENAI_API_KEY && (type === "mask" || type === "hold")) {
+    if (process.env.OPENAI_API_KEY && (type === "mask" || type === "hold" || type === "edit")) {
       try {
         const blendPrompt = type === "mask" 
           ? "Blend this face mask naturally with the figure/person face. Make it look like they're wearing the mask. Don't change anything else."
@@ -128,71 +158,6 @@ app.post("/api/generate-image", upload.fields([
           model: "dall-e-2",
           image: compositeImage,
           prompt: blendPrompt,
-          size,
-          response_format: "b64_json",
-        });
-        finalImage = Buffer.from(blendResult.data[0].b64_json, "base64");
-      } catch (aiError) {
-        console.log("AI blending failed, using composite only:", aiError.message);
-        // Continue with composite-only result
-      }
-    }
-
-    // Convert final result to base64
-    const base64Result = finalImage.toString('base64');
-    return res.json({ imageBase64: base64Result });
-  } catch (e) {
-    console.error("Image processing error:", e);
-    const status = e?.status || e?.response?.status || 500;
-    const message = e?.message || "Image processing failed";
-    return res.status(status).json({
-      error: message
-    });
-  }
-});
-
-app.listen(3001, () => console.log("API on :3001"));
-      // Create semi-transparent overlay effect
-      const transparentTemplate = await sharp(resizedTemplate)
-        .composite([{
-          input: Buffer.from(`<svg width="${targetTemplateWidth}" height="${targetTemplateHeight}">
-            <rect width="100%" height="100%" fill="white" opacity="0.3"/>
-          </svg>`),
-          blend: 'multiply'
-        }])
-        .png()
-        .toBuffer();
-
-      compositeImage = await userImage
-        .composite([{
-          input: transparentTemplate,
-          top: Math.floor(userHeight * 0.2),
-          left: Math.floor(userWidth * 0.2),
-          blend: 'overlay'
-        }])
-        .png()
-        .toBuffer();
-    } else {
-      // Default: just place template
-      compositeImage = await userImage
-        .composite([{
-          input: resizedTemplate,
-          top: top,
-          left: left,
-          blend: 'over'
-        }])
-        .png()
-        .toBuffer();
-    }
-
-    // Optional: Use OpenAI for subtle blending/shadows (only if needed)
-    let finalImage = compositeImage;
-    if (process.env.OPENAI_API_KEY && type === "edit") {
-      try {
-        const blendResult = await openai.images.edit({
-          model: "dall-e-2",
-          image: compositeImage,
-          prompt: "Blend edges subtly, add natural shadows and lighting. Don't change the content, just improve the integration.",
           size,
           response_format: "b64_json",
         });

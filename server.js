@@ -135,14 +135,23 @@ app.post("/api/generate-image",
               size,
               response_format: "b64_json",
             });
+            console.log("AI response received for wear mode");
             output = Buffer.from(ai2.data[0].b64_json, "base64");
+          console.log("AI response received for hold mode");
           } catch (e) {
             console.warn("AI wear-mask blend failed; using sharp composite.", e?.message);
           }
         }
       }
 
-      return res.json({ imageBase64: output.toString('base64') });
+      const base64Result = output.toString('base64');
+      console.log("Sending response with base64 length:", base64Result.length);
+      
+      if (!base64Result || base64Result.length === 0) {
+        throw new Error("Generated image is empty");
+      }
+      
+      return res.json({ imageBase64: base64Result });
     } catch (e) {
       console.error("Image processing error:", e);
       const status = e?.status || e?.response?.status || 500;

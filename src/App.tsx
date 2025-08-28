@@ -32,9 +32,18 @@ async function generateImage(userImage: File, mode: 'hold' | 'wear'): Promise<st
     }
 
     const imageBase64 = data?.imageBase64;
-    if (!imageBase64) throw new Error("Empty response from API");
+    if (!imageBase64) {
+      console.error("API response:", data);
+      throw new Error("Empty response from API - no imageBase64 field received");
+    }
+    
+    if (imageBase64.length === 0) {
+      throw new Error("Empty image data received from API");
+    }
+    
     return `data:image/png;base64,${imageBase64}`;
   } catch (error: any) {
+    console.error("Generate image error:", error);
     if (error.message?.includes('fetch')) {
       throw new Error("Image generation service is temporarily unavailable. Please try again later.");
     }

@@ -188,7 +188,8 @@ function App() {
       // Fetch mask image and add to form
       const maskBlob = await (await fetch("/mask.png")).blob();
       form.append("templateImage", maskBlob, "mask.png");
-      form.append("prompt", "Overlay this transparent PNG mask (mask.png) directly on the face of the person/character in the image. Do not change anything else in the image. Keep the background, colors, lighting, and details exactly as they are. Only add the mask on top of the face.");
+      form.append("prompt", "Apply this mask image as a face mask overlay on the person in the photo. The mask should appear to be worn on their face, not held in their hands. Keep everything else in the image exactly the same - same background, lighting, colors, and details. Only add the mask directly onto the face area.");
+      form.append("type", "overlay");
 
       const res = await fetch("/api/generate-image", {
         method: "POST",

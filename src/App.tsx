@@ -47,7 +47,7 @@ async function generateFaceMaskImage(userImage: File): Promise<string> {
     // Fetch mask image and add to form - use the actual mask image
     const maskBlob = await (await fetch("/mask.png")).blob();
     form.append("templateImage", maskBlob, "mask.png");
-    form.append("prompt", "Overlay mask.png on the uploaded photo so that it aligns with the central subject. Blend it seamlessly with consistent lighting and shading. Do not alter any other part of the image. Keep resolution, colors and aspect ratio identical."
+    form.append("prompt", "Overlay paperhole.png on the uploaded photo so that it aligns with the central subject. Blend it seamlessly with consistent lighting and shading. Do not alter any other part of the image. Keep resolution, colors and aspect ratio identical."
 );
     form.append("type", "mask");
 

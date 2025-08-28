@@ -610,7 +610,7 @@ function App() {
                 {uploadedImage2 ? (
                   <LocalFaceOverlay
                     baseImageFile={uploadedImage2}
-                    maskImagePath="/maskjob.png"
+                    maskImagePath="/jobmask2.png"
                     onExport={(url) => setGeneratedMeme2(url)}
                   />
                 ) : (

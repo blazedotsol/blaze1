@@ -35,12 +35,12 @@ app.post("/api/generate-image",
       } = req.body || {};
 
       const userFile = req.files?.userImage?.[0];
-      const appFile  = req.files?.applicationImage?.[0];
-      const maskFile = req.files?.maskImage?.[0];
+      const appFile  = req.files?.applicationImage?.[0] || req.files?.templateImage?.[0];
+      const maskFile = req.files?.maskImage?.[0] || req.files?.templateImage?.[0];
 
       if (!userFile) return res.status(400).json({ error: "Missing userImage" });
-      if ((mode === "dual" || mode === "hold") && !appFile) return res.status(400).json({ error: "Missing applicationImage (copy.png)" });
-      if ((mode === "dual" || mode === "wear") && !maskFile) return res.status(400).json({ error: "Missing maskImage (mask.png)" });
+      if ((mode === "dual" || mode === "hold") && !appFile) return res.status(400).json({ error: "Missing applicationImage or templateImage" });
+      if ((mode === "dual" || mode === "wear") && !maskFile) return res.status(400).json({ error: "Missing maskImage or templateImage" });
 
       const userBuf = userFile.buffer;
       const appBuf  = appFile?.buffer;

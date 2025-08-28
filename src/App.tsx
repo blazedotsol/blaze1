@@ -9,18 +9,11 @@ async function generateJobApplicationImage(userImage: File): Promise<string> {
     const form = new FormData();
     form.append("userImage", userImage, "user.png");
     
-    // Fetch template image and add to form  ✅ use the application (paper) image
-    const tplBlob = await (await fetch("/application.png")).blob();
-    form.append("templateImage", tplBlob, "application.png");
-
-    // Keep your original prompt
-    form.append(
-      "prompt",
-      "Composite the provided job application onto the uploaded photo so it looks naturally held by the figure. Use the uploaded photo exactly as it is — do not redraw or modify any part of it. Every pixel must remain identical except for blending in the paper. Preserve the photo's original aspect ratio, resolution, colors, and style."
-    );
-
-    // ✅ Use the server's expected type for 'hold' behavior
-    form.append("type", "edit");
+    // Fetch template image and add to form
+    const tplBlob = await (await fetch("/image copy copy.png")).blob();
+    form.append("templateImage", tplBlob, "template.png");
+    form.append("prompt", "Composite the provided job application onto the uploaded photo so it looks naturally held by the figure. Use the uploaded photo exactly as it is — do not redraw or modify any part of it. Every pixel must remain identical except for blending in the paper. Preserve the photo's original aspect ratio, resolution, colors, and style.");
+    form.append("type", "hold");
 
     const res = await fetch("/api/generate-image", {
       method: "POST",
@@ -51,18 +44,11 @@ async function generateFaceMaskImage(userImage: File): Promise<string> {
     const form = new FormData();
     form.append("userImage", userImage, "user.png");
     
-    // Fetch mask image and add to form  ✅ use the ACTUAL mask image
-    const maskBlob = await (await fetch("/mask.png")).blob();
+    // Fetch mask image and add to form
+    const maskBlob = await (await fetch("/image copy copy.png")).blob();
     form.append("templateImage", maskBlob, "mask.png");
-
-    // Prompt for wearing the mask (no file-name hints needed)
-    form.append(
-      "prompt",
-      "Blend this face mask naturally with the figure/person's face so it looks like they are wearing it. Match lighting and add subtle contact shadows. Do not change anything else."
-    );
-
-    // ✅ Use the server's expected type for overlay-on-face behavior
-    form.append("type", "overlay");
+    form.append("prompt", "Blend this face mask (from image mask.png) naturally with the figure/person face. Make it look like they're wearing the mask. Don't change anything else.");
+    form.append("type", "mask");
 
     const res = await fetch("/api/generate-image", {
       method: "POST",

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Sparkles, Download, RefreshCw, Image as ImageIcon } from "lucide-react";
 import { fileToDataUrl } from "./utils";
 import JobApplicationSweeper from "./components/EndlessRunner";
+import LocalFaceOverlay from "./components/LocalFaceOverlay";
 
 // Generate image with job application using proper image composition
 async function generateJobApplicationImage(userImage: File): Promise<string> {
@@ -587,7 +588,9 @@ function App() {
                 <h3 className="text-black font-mono text-lg uppercase tracking-wider">get jobbed</h3>
               </div>
               
-              <p className="text-gray-700 mb-6 text-sm font-mono">upload an image and give your figure a job application mask!</p>
+              <p className="text-gray-700 mb-6 text-sm font-mono">
+                upload an image and place the paper overlay manually (no AI).
+              </p>
               
               <div className="space-y-4">
                 <div>
@@ -601,32 +604,24 @@ function App() {
                   {uploadedImage2 && (
                     <p className="text-black text-sm mt-2 font-mono">✓ {uploadedImage2.name}</p>
                   )}
-                  {error2 && (
-                    <p className="text-red-600 text-sm mt-2 font-mono">error: {error2}</p>
-                  )}
                 </div>
                 
-                <button
-                  onClick={generateFaceMask}
-                  disabled={isGenerating2 || !uploadedImage2}
-                  className="w-full border border-black text-black px-6 py-3 hover:bg-black hover:text-white font-mono text-sm uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2"
-                >
-                  {isGenerating2 ? (
-                    <>
-                      <RefreshCw className="w-5 h-5 animate-spin" />
-                      generating...
-                    </>
-                  ) : (
-                    <>
-                      <ImageIcon className="w-5 h-5" />
-                      generate
-                    </>
-                  )}
-                </button>
+                {/* Når bilde er lastet, vis editoren */}
+                {uploadedImage2 ? (
+                  <LocalFaceOverlay
+                    baseImageFile={uploadedImage2}
+                    onExport={(url) => setGeneratedMeme2(url)}
+                  />
+                ) : (
+                  <p className="text-gray-600 font-mono text-xs">
+                    Tip: After you upload, drag/rotate/scale the paper overlay on the subject. Scroll to zoom.
+                  </p>
+                )}
                 
+                {/* Hvis du vil vise siste eksport */}
                 {generatedMeme2 && (
                   <div className="mt-4">
-                    <img src={generatedMeme2} alt="Generated Face Mask Meme" className="w-full border border-black" />
+                    <img src={generatedMeme2} alt="Jobbed" className="w-full border border-black" />
                     <a
                       href={generatedMeme2}
                       download="face-mask-meme.png"

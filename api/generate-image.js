@@ -4,76 +4,79 @@ import formidable from "formidable";
 import fs from "fs";
 
 export const config = {
-  api: {
-    bodyParser: false, // fordi vi sender FormData
-  },
+  api: { bodyParser: false }, // fordi vi sender FormData
 };
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export default async function handler(req, res) {
-  // CORS headers
+  // CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
 
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
 
-  const form = formidable({ multiples: true });
-  
+  const form = formidable({ multiples: false });
+
   form.parse(req, async (err, fields, files) => {
     try {
       if (err) throw err;
 
-      console.log("Files received:", Object.keys(files));
-      console.log("Fields received:", Object.keys(fields));
+      // Formidable kan levere arrays – hjelpere:
+      const pick = (v) => (Array.isArray(v) ? v[0] : v);
+      const userFile = pick(files.userImage);
+      const tplFile  = pick(files.templateImage);
+      const type     = (pick(fields.type) || "").toString().trim().toLowerCase();
+      const userPrompt = (pick(fields.prompt) || "").toString();
 
-      const userFile = files.userImage?.[0];
-      const templateFiles = files.templateImage || [];
-      
       if (!userFile) {
         console.log("userFile missing, available files:", Object.keys(files));
         return res.status(400).json({ error: "Missing userImage" });
       }
-      
-      // Check if we have 2 template files (new dual implementation)
-      if (templateFiles.length === 2) {
-        console.log("Using dual template implementation");
-        
-        const {
-          size = '1024x1024',
-          promptLeft = "Composite the provided job application onto the uploaded photo so it looks naturally held by the figure. Use the uploaded photo exactly as it is — do not redraw or modify any part of it. Every pixel must remain identical except for blending in the paper. Preserve the photo's original aspect ratio, resolution, colors, and style.",
-          promptRight = "Blend this face mask naturally with the person's face. Make it look like they're wearing the mask. Don't change anything else.",
-        } = fields;
-
-        const leftTemplateFile = templateFiles[0];
-        const rightTemplateFile = templateFiles[1];
-
-        // Process both panels in parallel
-        const [leftResult, rightResult] = await Promise.all([
-          processPanel(userFile, leftTemplateFile, promptLeft, size),
-          processPanel(userFile, rightTemplateFile, promptRight, size)
-        ]);
-
-        // For now, return the left result (you can enhance this to combine both later)
-        res.status(200).json({ imageBase64: leftResult });
-        
-      } else if (templateFiles.length === 1) {
-        console.log("Using single template implementation");
-        
-        const tplFile = templateFiles[0];
-        const prompt = fields.prompt || "Composite the provided job application onto the uploaded photo so it looks naturally held by the figure. Use the uploaded photo exactly as it is — do not redraw or modify any part of it. Every pixel must remain identical except for blending in the paper. Preserve the photo's original aspect ratio, resolution, colors, and style.";
-        
-        const result = await processPanel(userFile, tplFile, prompt, fields.size || "1024x1024");
-        res.status(200).json({ dataUrl: `data:image/png;base64,${result}` });
-        
-      } else {
-        return res.status(400).json({ error: "Need either 1 or 2 templateImage files" });
+      if (!tplFile) {
+        console.log("templateImage missing, available files:", Object.keys(files));
+        return res.status(400).json({ error: "Missing templateImage" });
       }
 
+      console.log("Fields received:", { type, hasPrompt: !!userPrompt });
+      console.log("Files received:", Object.keys(files));
+
+      const baseStream = fs.createReadStream(userFile.filepath);
+      const tplStream  = fs.createReadStream(tplFile.filepath);
+
+      // Standardprompter per type, men bruk alltid klientens prompt hvis sendt
+      const defaultPrompts = {
+        edit:
+          "Composite the provided job application onto the uploaded photo so it looks naturally held by the figure. Use the uploaded photo exactly as it is — do not redraw or modify any part of it. Every pixel must remain identical except for blending in the paper. Preserve the photo's original aspect ratio, resolution, colors, and style.",
+        overlay:
+          "Blend this face mask naturally with the person's face so it looks like they are wearing it. Match lighting and add subtle contact shadows. Do not change anything else."
+      };
+
+      const effectiveType = type === "overlay" ? "overlay" : "edit";
+      const prompt = userPrompt || defaultPrompts[effectiveType];
+
+      /**
+       * Merk:
+       * gpt-image-1 støtter image edits med flere input-bilder.
+       * Her sender vi [base, template] og lar prompten beskrive hvordan de skal komponeres.
+       * Hvis du bruker en faktisk 'mask' med alfa, må du heller bruke mask-parameteren.
+       */
+      const result = await openai.images.edit({
+        model: "gpt-image-1",
+        prompt,
+        image: [baseStream, tplStream], // base først, så overlay/template
+        size: "1024x1024",
+      });
+
+      const b64 = result?.data?.[0]?.b64_json;
+      if (!b64) {
+        return res.status(502).json({ error: "Empty image response from model" });
+      }
+
+      // Viktig: dataUrl må være streng med anførselstegn
+      res.status(200).json({ dataUrl: `data:image/png;base64,${b64}` });
     } catch (e) {
       console.error("generate-image error:", e);
       const status = e?.status || e?.response?.status || 500;
@@ -81,20 +84,4 @@ export default async function handler(req, res) {
       res.status(status).json({ error: message });
     }
   });
-}
-
-async function processPanel(userFile, templateFile, prompt, size) {
-  const baseStream = fs.createReadStream(userFile.filepath);
-  const templateStream = fs.createReadStream(templateFile.filepath);
-
-  const result = await openai.images.edit({
-    model: "dall-e-2",
-    prompt: prompt,
-    image: baseStream,
-    mask: templateStream,
-    size: size,
-    response_format: 'b64_json'
-  });
-
-  return result.data[0].b64_json;
 }

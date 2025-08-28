@@ -203,27 +203,6 @@ function App() {
 
       const dataUrl = data?.dataUrl;
       if (!dataUrl) throw new Error("Empty response from API");
-      form.append("userImage", uploadedImage2, "user.png");
-      
-      // Fetch mask image and add to form
-      const maskBlob = await (await fetch("/mask.png")).blob();
-      form.append("templateImage", maskBlob, "mask.png");
-      form.append("prompt", "Overlay this transparent PNG mask (mask.png) directly on the face of the person/character in the image. Do not change anything else in the image. Keep the background, colors, lighting, and details exactly as they are. Only add the mask on top of the face.");
-
-      const res = await fetch("/api/generate-image", {
-        method: "POST",
-        body: form,
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        const msg = data?.error || `HTTP ${res.status}`;
-        throw new Error(msg);
-      }
-
-      const dataUrl = data?.dataUrl;
-      if (!dataUrl) throw new Error("Empty response from API");
       setGeneratedMeme2(dataUrl);
     } catch (err: any) {
       console.error("Error generating mask image:", err);
